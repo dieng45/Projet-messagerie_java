@@ -38,7 +38,34 @@ public class InscriptionController {
     private PasswordField txtmotdepasse;
 
     @FXML
-    private ComboBox<?> txtrole;
+    private ComboBox<String> txtrole; // Utilise String simple
+
+    @FXML
+    public void initialize() {
+        // Ajouter directement les rôles
+        txtrole.getItems().addAll("ORGANISATEUR", "MEMBRE", "BENEVOLE");
+
+        // Valeur par défaut
+        txtrole.setValue("MEMBRE");
+    }
+
+    @FXML
+    private void inscrireUtilisateur() {
+        String nom = txtinsnom.getText();
+        String motDePasse = txtmotdepasse.getText();
+        String confirmation = txtconfirm.getText();
+        String roleSelectionne = txtrole.getValue();  // <-- ici
+        System.out.println("Rôle choisi : " + roleSelectionne);
+
+        // vérification si le mot de passe correspond à la confirmation
+        if (!motDePasse.equals(confirmation)) {
+            System.out.println("Les mots de passe ne correspondent pas !");
+            return;
+        }
+        // ajouter le code pour enregistrer l'utilisateur dans ta base ou liste
+        System.out.println("Nom : " + nom + ", Mot de passe : " + motDePasse + ", Rôle : " + roleSelectionne);
+    }
+
 
     @FXML
     private void retournerConnexion(ActionEvent event) {

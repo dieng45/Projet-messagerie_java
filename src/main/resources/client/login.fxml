@@ -9,7 +9,6 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.text.Font?>
 
-
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="520.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.association.messagerieg2.client.LoginController">
    <left>
       <AnchorPane prefHeight="407.0" prefWidth="228.0" style="-fx-background-color: #4F46E5;" BorderPane.alignment="CENTER" />
@@ -35,10 +34,10 @@
                   <Font size="14.0" />
                </font>
             </Label>
-            <TextField fx:id="NomUtilisateur" layoutX="127.0" layoutY="134.0" prefHeight="25.0" prefWidth="139.0" />
-            <PasswordField fx:id="MotDePasse" layoutX="126.0" layoutY="197.0" prefHeight="25.0" prefWidth="143.0" />
-            <Button fx:id="btnSeConnecter" layoutX="19.0" layoutY="262.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="254.0" text="Se Connecter" />
-            <Button fx:id="bntsinscrire" layoutX="19.0" layoutY="311.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="255.0" text="S'inscrire" onAction="#ouvrirInscription" />
+            <TextField fx:id="NomUtilisateur" layoutX="127.0" layoutY="134.0" prefHeight="25.0" prefWidth="129.0" />
+            <PasswordField fx:id="MotDePasse" layoutX="126.0" layoutY="197.0" prefHeight="25.0" prefWidth="133.0" />
+            <Button fx:id="btnSeConnecter" layoutX="23.0" layoutY="271.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="96.0" text="Se Connecter" onAction="#ouvrirInscription"/>
+            <Button fx:id="bntsinscrire" layoutX="170.0" layoutY="271.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="98.0" text="S'inscrire " onAction="#ouvrirInscription" />
          </children>
       </AnchorPane>
    </center>
