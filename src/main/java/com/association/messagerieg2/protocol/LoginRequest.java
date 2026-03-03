@@ -1,17 +1,14 @@
 package com.association.messagerieg2.protocol;
 
-public class RegisterRequest extends Packet{
+public class LoginRequest  extends Packet{
     private String username;
     private String password;
-    private String role;
 
-    public RegisterRequest(String username, String password, String role) {
+    public LoginRequest(String username, String password) {
         this.username = username;
         this.password = password;
-        this.role = role;
     }
 
     public String getUsername() { return username; }
     public String getPassword() { return password; }
-    public String getRole() { return role; }
 }
