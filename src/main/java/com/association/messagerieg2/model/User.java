@@ -1,7 +1,10 @@
 package com.association.messagerieg2.model;
 
 import java.time.LocalDateTime;
+import jakarta.persistence.*;
 
+@Entity
+@Table(name = "users")
 public class User {
     // ----- ENUMS -----
     public enum Role {
@@ -14,32 +17,45 @@ public class User {
         ONLINE,
         OFFLINE
     }
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    @Column(unique = true, nullable = false)
     private String username;
+
+    @Column(nullable = false)
     private String password;
+
+    @Enumerated(EnumType.STRING)
     private Role role;
+
+    @Enumerated(EnumType.STRING)
     private Status status;
+
     private LocalDateTime date_creation;
-    private static int compteurId = 1; // auto-incrément
 
-    //CONSTRUCTEUR
+    // CONSTRUCTEUR VIDE OBLIGATOIRE
+    public User() {
+    }
 
-    public User(String username, int id, String password, Role role, Status status, LocalDateTime dateCreation) {
+    // CONSTRUCTEUR (⚠️ on enlève id ici !)
+    public User(String username, String password, Role role, Status status, LocalDateTime dateCreation) {
         this.username = username;
-        this.id = id;
         this.password = password;
         this.role = role;
         this.status = status;
         this.date_creation = dateCreation;
     }
-    //GETTERS
+
+    // GETTERS
+    public int getId() {
+        return id;
+    }
 
     public String getUsername() {
         return username;
-    }
-
-    public int getId() {
-        return id;
     }
 
     public String getPassword() {
@@ -50,16 +66,15 @@ public class User {
         return role;
     }
 
-    public LocalDateTime getDateCreation() {
-        return date_creation;
-    }
-
     public Status getStatus() {
         return status;
     }
 
-   //SETTERS
+    public LocalDateTime getDateCreation() {
+        return date_creation;
+    }
 
+    // SETTERS
     public void setUsername(String username) {
         this.username = username;
     }
@@ -76,6 +91,10 @@ public class User {
         this.status = status;
     }
 
+    public void setDateCreation(LocalDateTime date_creation) {
+        this.date_creation = date_creation;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -85,5 +104,6 @@ public class User {
                 ", status=" + status +
                 ", dateCreation=" + date_creation +
                 '}';
+
     }
 }

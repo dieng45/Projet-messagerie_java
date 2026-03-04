@@ -53,6 +53,9 @@
             <artifactId>hibernate-core</artifactId>
             <version>6.4.4.Final</version>
         </dependency>
+
+        <!--JPA-->
+
     </dependencies>
 
     <build>
