@@ -30,6 +30,24 @@ public class LoginController {
 
 
     @FXML
+    private void gererConnexion(ActionEvent event) {
+
+        String username = NomUtilisateur.getText();
+        String password = MotDePasse.getText();
+
+        if(username.isEmpty() || password.isEmpty()){
+            System.out.println("Champs obligatoires !");
+            return;
+        }
+
+        if(username.equals("admin") && password.equals("1234")){
+            System.out.println("Connexion réussie !");
+        } else {
+            System.out.println("Compte inexistant. Veuillez vous inscrire.");
+        }
+    }
+
+    @FXML
     private void ouvrirInscription(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(
