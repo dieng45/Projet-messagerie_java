@@ -5,12 +5,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 
-import javafx.scene.control.TextField;
 import javafx.event.ActionEvent;
 import java.io.IOException;
 import com.association.messagerieg2.model.User;
@@ -63,12 +60,20 @@ public class InscriptionController {
         String roleSelectionne = txtrole.getValue();
 
         if (nom.isEmpty() || motDePasse.isEmpty() || confirmation.isEmpty()) {
-            System.out.println("Champs obligatoires !");
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Erreur");
+            alert.setHeaderText(null);
+            alert.setContentText("Veuillez remplir tous les champs !");
+            alert.showAndWait();
             return;
         }
 
         if (!motDePasse.equals(confirmation)) {
-            System.out.println("Les mots de passe ne correspondent pas !");
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreur");
+            alert.setHeaderText(null);
+            alert.setContentText("Les mots de passe ne correspondent pas !");
+            alert.showAndWait();
             return;
         }
 
@@ -87,8 +92,11 @@ public class InscriptionController {
                     .getSingleResult();
 
             if (count > 0) {
-                System.out.println("Nom d'utilisateur déjà utilisé !");
-                transaction.rollback();
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Erreur");
+                alert.setHeaderText(null);
+                alert.setContentText("Nom d'utilisateur déjà utilisé !");
+                alert.showAndWait();
                 return;
             }
 
@@ -107,7 +115,11 @@ public class InscriptionController {
 
             transaction.commit();
 
-            System.out.println("Utilisateur enregistré avec succès !");
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Succès");
+            alert.setHeaderText(null);
+            alert.setContentText("Inscription réussie !");
+            alert.showAndWait();
 
             // Nettoyer les champs
             txtinsnom.clear();

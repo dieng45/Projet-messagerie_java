@@ -1,5 +1,9 @@
 package com.association.messagerieg2.client;
 
+import com.association.messagerieg2.model.User;
+import com.association.messagerieg2.util.JPAUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -9,6 +13,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.stage.Stage;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
 
 
 import javafx.scene.control.TextField;
@@ -30,20 +35,77 @@ public class LoginController {
 
 
     @FXML
+
     private void gererConnexion(ActionEvent event) {
 
-        String username = NomUtilisateur.getText();
-        String password = MotDePasse.getText();
+        String username = NomUtilisateur.getText().trim();
+        String password = MotDePasse.getText().trim();
 
         if(username.isEmpty() || password.isEmpty()){
-            System.out.println("Champs obligatoires !");
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Erreur");
+            alert.setHeaderText(null);
+            alert.setContentText("Veuillez remplir tous les champs !");
+            alert.showAndWait();
             return;
         }
 
-        if(username.equals("admin") && password.equals("1234")){
-            System.out.println("Connexion réussie !");
-        } else {
-            System.out.println("Compte inexistant. Veuillez vous inscrire.");
+        EntityManager em = JPAUtil.getFactoryEntityManagerFactory().createEntityManager();
+
+        try {
+
+            User user = em.createQuery(
+                            "SELECT u FROM User u WHERE u.username = :username AND u.password = :password",
+                            User.class
+                    )
+                    .setParameter("username", username)
+                    .setParameter("password", password)
+                    .getResultStream()
+                    .findFirst()
+                    .orElse(null);
+
+            if(user != null){
+
+                EntityTransaction transaction = em.getTransaction();
+                transaction.begin();
+
+                user.setStatus(User.Status.ONLINE);
+                em.merge(user);
+
+                transaction.commit();
+
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Succès");
+                alert.setHeaderText(null);
+                alert.setContentText("Connexion réussie !");
+                alert.showAndWait();
+            } else {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Connexion impossible");
+                alert.setHeaderText(null);
+                alert.setContentText("Compte inexistant. Veuillez vous inscrire.");
+                alert.showAndWait();
+
+                // Ouvrir chat.fxml
+                FXMLLoader loader = new FXMLLoader(
+                        getClass().getResource("/client/chat.fxml")
+                );
+
+                Parent root = loader.load();
+                Stage stage = new Stage();
+                stage.setTitle("Chat");
+                stage.setScene(new Scene(root));
+                stage.show();
+
+            //  Fermer la fenêtre login
+                Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+                currentStage.close();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            em.close();
         }
     }
 
