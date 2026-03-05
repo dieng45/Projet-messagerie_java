@@ -59,21 +59,32 @@ public class InscriptionController {
         String confirmation = txtconfirm.getText();
         String roleSelectionne = txtrole.getValue();
 
-        if (nom.isEmpty() || motDePasse.isEmpty() || confirmation.isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Erreur");
-            alert.setHeaderText(null);
-            alert.setContentText("Veuillez remplir tous les champs !");
-            alert.showAndWait();
-            return;
+        // reset style
+        txtinsnom.setStyle(null);
+        txtmotdepasse.setStyle(null);
+        txtconfirm.setStyle(null);
+
+        boolean erreur = false;
+
+        if(nom.isEmpty()){
+            txtinsnom.setStyle("-fx-border-color: red;");
+            txtinsnom.setPromptText("Nom obligatoire");
+            erreur = true;
         }
 
-        if (!motDePasse.equals(confirmation)) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Erreur");
-            alert.setHeaderText(null);
-            alert.setContentText("Les mots de passe ne correspondent pas !");
-            alert.showAndWait();
+        if(motDePasse.isEmpty()){
+            txtmotdepasse.setStyle("-fx-border-color: red;");
+            txtmotdepasse.setPromptText("Mot de passe obligatoire");
+            erreur = true;
+        }
+
+        if(confirmation.isEmpty()){
+            txtconfirm.setStyle("-fx-border-color: red;");
+            txtconfirm.setPromptText("Confirmation obligatoire");
+            erreur = true;
+        }
+
+        if(erreur){
             return;
         }
 
@@ -114,6 +125,7 @@ public class InscriptionController {
             em.persist(nouvelUtilisateur);
 
             transaction.commit();
+            inscriptionReussie=true;
 
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Succès");
@@ -121,10 +133,9 @@ public class InscriptionController {
             alert.setContentText("Inscription réussie !");
             alert.showAndWait();
 
+
+
             // Nettoyer les champs
-            txtinsnom.clear();
-            txtmotdepasse.clear();
-            txtconfirm.clear();
 
         } catch (Exception e) {
             transaction.rollback();
@@ -133,17 +144,26 @@ public class InscriptionController {
             em.close();
         }
     }
-
+    private boolean inscriptionReussie = false;
     @FXML
     private void retournerConnexion(ActionEvent event) {
+
+        if(!inscriptionReussie){
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setContentText("Vous devez d'abord vous inscrire !");
+            alert.showAndWait();
+            return;
+        }
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/client/login.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/client/chat.fxml"));
             Parent root = loader.load();
 
             Stage stage = new Stage();
-            stage.setTitle("Connexion");
+            stage.setTitle("chat");
             stage.setScene(new Scene(root));
             stage.show();
+
+
 
             // Fermer la fenêtre actuelle (inscription)
             Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();

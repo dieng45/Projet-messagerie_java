@@ -41,17 +41,29 @@ public class LoginController {
         String username = NomUtilisateur.getText().trim();
         String password = MotDePasse.getText().trim();
 
-        if(username.isEmpty() || password.isEmpty()){
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Erreur");
-            alert.setHeaderText(null);
-            alert.setContentText("Veuillez remplir tous les champs !");
-            alert.showAndWait();
+        // reset style
+        NomUtilisateur.setStyle(null);
+        MotDePasse.setStyle(null);
+
+        boolean erreur = false;
+
+        if(username.isEmpty()){
+            NomUtilisateur.setStyle("-fx-border-color: red;");
+            NomUtilisateur.setPromptText("Champ obligatoire");
+            erreur = true;
+        }
+
+        if(password.isEmpty()){
+            MotDePasse.setStyle("-fx-border-color: red;");
+            MotDePasse.setPromptText("Champ obligatoire");
+            erreur = true;
+        }
+
+        if(erreur){
             return;
         }
 
         EntityManager em = JPAUtil.getFactoryEntityManagerFactory().createEntityManager();
-
         try {
 
             User user = em.createQuery(
@@ -74,19 +86,8 @@ public class LoginController {
 
                 transaction.commit();
 
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Succès");
-                alert.setHeaderText(null);
-                alert.setContentText("Connexion réussie !");
-                alert.showAndWait();
-            } else {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Connexion impossible");
-                alert.setHeaderText(null);
-                alert.setContentText("Compte inexistant. Veuillez vous inscrire.");
-                alert.showAndWait();
 
-                // Ouvrir chat.fxml
+                // ✅ OUVRIR CHAT ICI
                 FXMLLoader loader = new FXMLLoader(
                         getClass().getResource("/client/chat.fxml")
                 );
@@ -97,9 +98,16 @@ public class LoginController {
                 stage.setScene(new Scene(root));
                 stage.show();
 
-            //  Fermer la fenêtre login
-                Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+                // Fermer login
+                Stage currentStage = (Stage) ((Node) event.getSource())
+                        .getScene().getWindow();
                 currentStage.close();
+
+            } else {
+
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setContentText("Nom Utilisateur ou mot de passe incorrect");
+                alert.showAndWait();
             }
 
         } catch (Exception e) {
