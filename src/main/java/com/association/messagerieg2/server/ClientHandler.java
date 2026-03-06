@@ -1,17 +1,16 @@
 package com.association.messagerieg2.server;
 
 import com.association.messagerieg2.dao.MessageDAo;
-import com.association.messagerieg2.protocol.*;
 import com.association.messagerieg2.dao.UserDAO;
-import com.association.messagerieg2.dao.MessageDAo;
 import com.association.messagerieg2.model.User;
 import com.association.messagerieg2.model.Message;
+import com.association.messagerieg2.protocol.*;
 import com.association.messagerieg2.util.PasswordUtil;
-import com.association.messagerieg2.model.Status;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class ClientHandler implements Runnable {
@@ -51,7 +50,7 @@ public class ClientHandler implements Runnable {
                     if (user != null && PasswordUtil.check(login.getPassword(), user.getPassword())) {
                         success = true;
                         this.username = user.getUsername();
-                        user.setStatus(Status.ONLINE);
+                        user.setStatus(User.Status.ONLINE);
                         userDAO.update(user);
 
                         System.out.println("Connexion réussie : " + username);
@@ -68,8 +67,17 @@ public class ClientHandler implements Runnable {
                         User newUser = new User();
                         newUser.setUsername(register.getUsername());
                         newUser.setPassword(PasswordUtil.hash(register.getPassword()));
-                        newUser.setRole(register.getRole());
-                        newUser.setStatus(Status.OFFLINE);
+
+                        // Convertir le rôle (String) en enum User.Role
+                        try {
+                            newUser.setRole(User.Role.valueOf(register.getRole()));
+                        } catch (IllegalArgumentException e) {
+                            out.writeObject(new Response(false, "Rôle invalide !"));
+                            out.flush();
+                            continue;
+                        }
+
+                        newUser.setStatus(User.Status.OFFLINE);
                         userDAO.save(newUser);
 
                         System.out.println("Nouvel utilisateur inscrit : " + newUser.getUsername());
@@ -82,27 +90,28 @@ public class ClientHandler implements Runnable {
 
                 // ---------------- SendMessageRequest ----------------
                 else if (packet instanceof SendMessageRequest request) {
-                    // Vérifier que l'expéditeur existe
                     User sender = userDAO.findByUsername(request.getSender());
                     User receiver = userDAO.findByUsername(request.getReceiver());
 
                     if (sender != null && receiver != null) {
-                        // Vérifier si destinataire est connecté
                         boolean delivered = false;
                         List<ClientHandler> clients = server.getClients();
                         for (ClientHandler ch : clients) {
                             if (ch.getUsername() != null && ch.getUsername().equals(request.getReceiver())) {
-                                ch.send(new Response(true, "Message de " + request.getSender() + ": " + request.getContenu()));
+                                ch.send(new Response(true,
+                                        "Message de " + request.getSender() + ": " + request.getContenu()));
                                 delivered = true;
                                 break;
                             }
                         }
 
-                        // Sauvegarder en base si hors ligne
+                        // Création du message avec setters
                         Message msg = new Message();
                         msg.setSender(sender);
                         msg.setReceiver(receiver);
                         msg.setContenu(request.getContenu());
+                        msg.setDateEnvoi(LocalDateTime.now());
+                        msg.setStatut(Message.MessageStatus.ENVOYE);
                         messageDAO.save(msg);
 
                         out.writeObject(new Response(true, delivered ? "Message livré" : "Message enregistré pour livraison"));
@@ -116,11 +125,11 @@ public class ClientHandler implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            try { socket.close(); } catch (Exception e) {}
+            try { socket.close(); } catch (Exception ignored) {}
             if (username != null) {
                 User user = userDAO.findByUsername(username);
                 if (user != null) {
-                    user.setStatus(Status.OFFLINE);
+                    user.setStatus(User.Status.OFFLINE);
                     userDAO.update(user);
                 }
             }
