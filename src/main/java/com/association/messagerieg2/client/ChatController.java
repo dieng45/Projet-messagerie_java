@@ -5,6 +5,11 @@ import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
+import javafx.scene.control.ListView;
+import com.association.messagerieg2.util.JPAUtil;
+import com.association.messagerieg2.model.User;
+import java.util.List;
+import jakarta.persistence.EntityManager;
 
 
 public class ChatController {
@@ -26,7 +31,7 @@ public class ChatController {
     private Button sendButton;
 
     @FXML
-    private ListView<?> userListView;
+    private ListView<String> userListView;
 
     @FXML
     void handleFile(ActionEvent event) {
