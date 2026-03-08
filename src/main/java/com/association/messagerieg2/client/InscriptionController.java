@@ -5,12 +5,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 
-import javafx.scene.control.TextField;
 import javafx.event.ActionEvent;
 import java.io.IOException;
 import com.association.messagerieg2.model.User;
@@ -62,13 +59,32 @@ public class InscriptionController {
         String confirmation = txtconfirm.getText();
         String roleSelectionne = txtrole.getValue();
 
-        if (nom.isEmpty() || motDePasse.isEmpty() || confirmation.isEmpty()) {
-            System.out.println("Champs obligatoires !");
-            return;
+        // reset style
+        txtinsnom.setStyle(null);
+        txtmotdepasse.setStyle(null);
+        txtconfirm.setStyle(null);
+
+        boolean erreur = false;
+
+        if(nom.isEmpty()){
+            txtinsnom.setStyle("-fx-border-color: red;");
+            txtinsnom.setPromptText("Nom obligatoire");
+            erreur = true;
         }
 
-        if (!motDePasse.equals(confirmation)) {
-            System.out.println("Les mots de passe ne correspondent pas !");
+        if(motDePasse.isEmpty()){
+            txtmotdepasse.setStyle("-fx-border-color: red;");
+            txtmotdepasse.setPromptText("Mot de passe obligatoire");
+            erreur = true;
+        }
+
+        if(confirmation.isEmpty()){
+            txtconfirm.setStyle("-fx-border-color: red;");
+            txtconfirm.setPromptText("Confirmation obligatoire");
+            erreur = true;
+        }
+
+        if(erreur){
             return;
         }
 
@@ -87,8 +103,11 @@ public class InscriptionController {
                     .getSingleResult();
 
             if (count > 0) {
-                System.out.println("Nom d'utilisateur déjà utilisé !");
-                transaction.rollback();
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Erreur");
+                alert.setHeaderText(null);
+                alert.setContentText("Nom d'utilisateur déjà utilisé !");
+                alert.showAndWait();
                 return;
             }
 
@@ -106,13 +125,17 @@ public class InscriptionController {
             em.persist(nouvelUtilisateur);
 
             transaction.commit();
+            inscriptionReussie=true;
 
-            System.out.println("Utilisateur enregistré avec succès !");
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Succès");
+            alert.setHeaderText(null);
+            alert.setContentText("Inscription réussie !");
+            alert.showAndWait();
+
+
 
             // Nettoyer les champs
-            txtinsnom.clear();
-            txtmotdepasse.clear();
-            txtconfirm.clear();
 
         } catch (Exception e) {
             transaction.rollback();
@@ -121,17 +144,26 @@ public class InscriptionController {
             em.close();
         }
     }
-
+    private boolean inscriptionReussie = false;
     @FXML
     private void retournerConnexion(ActionEvent event) {
+
+        if(!inscriptionReussie){
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setContentText("Vous devez d'abord vous inscrire !");
+            alert.showAndWait();
+            return;
+        }
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/client/login.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/client/chat.fxml"));
             Parent root = loader.load();
 
             Stage stage = new Stage();
-            stage.setTitle("Connexion");
+            stage.setTitle("chat");
             stage.setScene(new Scene(root));
             stage.show();
+
+
 
             // Fermer la fenêtre actuelle (inscription)
             Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();

@@ -1,18 +1,43 @@
 package com.association.messagerieg2.client;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 
+
 public class ChatController {
+
+
+    @FXML
+    private Button fileButton;
+
+    @FXML
+    private ScrollPane message;
 
     @FXML
     private VBox messageContainer;
 
     @FXML
+    private TextField messageField;
+
+    @FXML
+    private Button sendButton;
+
+    @FXML
     private ListView<?> userListView;
+
+    @FXML
+    void handleFile(ActionEvent event) {
+
+    }
+
+    @FXML
+    void handleSend(ActionEvent event) {
+
+    }
+
 
     private void addMessage(String message, boolean isSent) {
         Label msgLabel = new Label(message);
