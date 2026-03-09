@@ -7,86 +7,67 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
-
 import javafx.event.ActionEvent;
 import java.io.IOException;
 import com.association.messagerieg2.model.User;
 import com.association.messagerieg2.util.JPAUtil;
+import com.association.messagerieg2.util.PasswordUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
-
 import java.time.LocalDateTime;
+
 public class InscriptionController {
 
-    @FXML
-    private Label Confirmotdepasse;
-
-    @FXML
-    private Label MotdepasseIns;
-
-    @FXML
-    private Label NomutilisateurIns;
-
-    @FXML
-    private Label Role;
-
-    @FXML
-    private PasswordField txtconfirm;
-
-    @FXML
-    private TextField txtinsnom;
-
-    @FXML
-    private PasswordField txtmotdepasse;
-
-    @FXML
-    private ComboBox<String> txtrole; // Utilise String simple
+    @FXML private Label Confirmotdepasse;
+    @FXML private Label MotdepasseIns;
+    @FXML private Label NomutilisateurIns;
+    @FXML private Label Role;
+    @FXML private PasswordField txtconfirm;
+    @FXML private TextField txtinsnom;
+    @FXML private PasswordField txtmotdepasse;
+    @FXML private ComboBox<String> txtrole;
 
     @FXML
     public void initialize() {
-        // Ajouter directement les rôles
         txtrole.getItems().addAll("ORGANISATEUR", "MEMBRE", "BENEVOLE");
-
-        // Valeur par défaut
         txtrole.setValue("MEMBRE");
     }
 
     @FXML
     private void inscrireUtilisateur() {
 
-        String nom = txtinsnom.getText();
-        String motDePasse = txtmotdepasse.getText();
-        String confirmation = txtconfirm.getText();
+        String nom = txtinsnom.getText().trim();
+        String motDePasse = txtmotdepasse.getText().trim();
+        String confirmation = txtconfirm.getText().trim();
         String roleSelectionne = txtrole.getValue();
 
-        // reset style
         txtinsnom.setStyle(null);
         txtmotdepasse.setStyle(null);
         txtconfirm.setStyle(null);
 
         boolean erreur = false;
 
-        if(nom.isEmpty()){
+        if (nom.isEmpty()) {
             txtinsnom.setStyle("-fx-border-color: red;");
             txtinsnom.setPromptText("Nom obligatoire");
             erreur = true;
         }
-
-        if(motDePasse.isEmpty()){
+        if (motDePasse.isEmpty()) {
             txtmotdepasse.setStyle("-fx-border-color: red;");
             txtmotdepasse.setPromptText("Mot de passe obligatoire");
             erreur = true;
         }
-
-        if(confirmation.isEmpty()){
+        if (confirmation.isEmpty()) {
             txtconfirm.setStyle("-fx-border-color: red;");
             txtconfirm.setPromptText("Confirmation obligatoire");
             erreur = true;
         }
-
-        if(erreur){
-            return;
+        if (!motDePasse.equals(confirmation)) {
+            txtconfirm.setStyle("-fx-border-color: red;");
+            showAlert(Alert.AlertType.ERROR, "Les mots de passe ne correspondent pas !");
+            erreur = true;
         }
+        if (erreur) return;
 
         EntityManager em = JPAUtil.getFactoryEntityManagerFactory().createEntityManager();
         EntityTransaction transaction = em.getTransaction();
@@ -94,48 +75,35 @@ public class InscriptionController {
         try {
             transaction.begin();
 
-            // Vérifier si username existe déjà
+            // RG1 : vérifier username unique
             Long count = em.createQuery(
-                            "SELECT COUNT(u) FROM User u WHERE u.username = :username",
-                            Long.class
-                    )
+                            "SELECT COUNT(u) FROM User u WHERE u.username = :username", Long.class)
                     .setParameter("username", nom)
                     .getSingleResult();
 
             if (count > 0) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Erreur");
-                alert.setHeaderText(null);
-                alert.setContentText("Nom d'utilisateur déjà utilisé !");
-                alert.showAndWait();
+                showAlert(Alert.AlertType.ERROR, "Nom d'utilisateur déjà utilisé !");
                 return;
             }
 
-            // Conversion String → Enum
+            // RG9 : hacher le mot de passe
+            String motDePasseHache = PasswordUtil.hash(motDePasse);
+
             User.Role roleEnum = User.Role.valueOf(roleSelectionne);
 
             User nouvelUtilisateur = new User(
                     nom,
-                    motDePasse,
+                    motDePasseHache, // ← mot de passe haché
                     roleEnum,
                     User.Status.OFFLINE,
                     LocalDateTime.now()
             );
 
             em.persist(nouvelUtilisateur);
-
             transaction.commit();
-            inscriptionReussie=true;
+            inscriptionReussie = true;
 
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Succès");
-            alert.setHeaderText(null);
-            alert.setContentText("Inscription réussie !");
-            alert.showAndWait();
-
-
-
-            // Nettoyer les champs
+            showAlert(Alert.AlertType.INFORMATION, "Inscription réussie !");
 
         } catch (Exception e) {
             transaction.rollback();
@@ -144,28 +112,26 @@ public class InscriptionController {
             em.close();
         }
     }
+
     private boolean inscriptionReussie = false;
+
     @FXML
     private void retournerConnexion(ActionEvent event) {
-
-        if(!inscriptionReussie){
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setContentText("Vous devez d'abord vous inscrire !");
-            alert.showAndWait();
+        if (!inscriptionReussie) {
+            showAlert(Alert.AlertType.WARNING, "Vous devez d'abord vous inscrire !");
             return;
         }
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/client/chat.fxml"));
+            // ← Retour vers LOGIN (pas chat)
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/client/login.fxml"));
             Parent root = loader.load();
-
             Stage stage = new Stage();
-            stage.setTitle("chat");
+            stage.setTitle("Login");
             stage.setScene(new Scene(root));
+            stage.setResizable(false);
             stage.show();
 
-
-
-            // Fermer la fenêtre actuelle (inscription)
             Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             currentStage.close();
 
@@ -174,4 +140,10 @@ public class InscriptionController {
         }
     }
 
+    private void showAlert(Alert.AlertType type, String message) {
+        Alert alert = new Alert(type);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
 }

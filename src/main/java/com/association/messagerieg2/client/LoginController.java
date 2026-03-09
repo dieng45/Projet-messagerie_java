@@ -2,6 +2,7 @@ package com.association.messagerieg2.client;
 
 import com.association.messagerieg2.model.User;
 import com.association.messagerieg2.util.JPAUtil;
+import com.association.messagerieg2.util.PasswordUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import javafx.event.ActionEvent;
@@ -14,97 +15,93 @@ import javafx.scene.control.PasswordField;
 import javafx.stage.Stage;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
-
-
 import javafx.scene.control.TextField;
 import java.io.IOException;
 
 public class LoginController {
 
-    @FXML
-    private PasswordField MotDePasse;
+    @FXML private PasswordField MotDePasse;
+    @FXML private TextField NomUtilisateur;
+    @FXML private Button bntsinscrire;
+    @FXML private Button btnSeConnecter;
 
     @FXML
-    private TextField NomUtilisateur;
-
-    @FXML
-    private Button bntsinscrire;
-
-    @FXML
-    private Button btnSeConnecter;
-
-
-    @FXML
-
     private void gererConnexion(ActionEvent event) {
 
         String username = NomUtilisateur.getText().trim();
         String password = MotDePasse.getText().trim();
 
-        // reset style
         NomUtilisateur.setStyle(null);
         MotDePasse.setStyle(null);
 
         boolean erreur = false;
 
-        if(username.isEmpty()){
+        if (username.isEmpty()) {
             NomUtilisateur.setStyle("-fx-border-color: red;");
             NomUtilisateur.setPromptText("Champ obligatoire");
             erreur = true;
         }
 
-        if(password.isEmpty()){
+        if (password.isEmpty()) {
             MotDePasse.setStyle("-fx-border-color: red;");
             MotDePasse.setPromptText("Champ obligatoire");
             erreur = true;
         }
 
-        if(erreur){
-            return;
-        }
+        if (erreur) return;
+
+        // ← DEBUG : voir le hash généré
+        String hashedPassword = PasswordUtil.hash(password);
+        System.out.println("[DEBUG] Hash généré : " + hashedPassword);
 
         EntityManager em = JPAUtil.getFactoryEntityManagerFactory().createEntityManager();
         try {
 
             User user = em.createQuery(
                             "SELECT u FROM User u WHERE u.username = :username AND u.password = :password",
-                            User.class
-                    )
+                            User.class)
                     .setParameter("username", username)
-                    .setParameter("password", password)
+                    .setParameter("password", hashedPassword)
                     .getResultStream()
                     .findFirst()
                     .orElse(null);
 
-            if(user != null){
+            if (user != null) {
 
                 EntityTransaction transaction = em.getTransaction();
                 transaction.begin();
-
                 user.setStatus(User.Status.ONLINE);
                 em.merge(user);
-
                 transaction.commit();
 
+                try {
+                    FXMLLoader loader = new FXMLLoader(
+                            getClass().getResource("/client/chat.fxml")
+                    );
+                    Parent root = loader.load();
 
-                // ✅ OUVRIR CHAT ICI
-                FXMLLoader loader = new FXMLLoader(
-                        getClass().getResource("/client/chat.fxml")
-                );
+                    ChatController chatController = loader.getController();
+                    chatController.setCurrentUser(user);
 
-                Parent root = loader.load();
-                Stage stage = new Stage();
-                stage.setTitle("Chat");
-                stage.setScene(new Scene(root));
-                stage.show();
+                    Stage stage = new Stage();
+                    stage.setTitle("Chat");
+                    stage.setScene(new Scene(root, 700, 500));
+                    stage.setResizable(false);
+                    stage.show();
 
-                // Fermer login
-                Stage currentStage = (Stage) ((Node) event.getSource())
-                        .getScene().getWindow();
-                currentStage.close();
+                    Stage currentStage = (Stage) ((Node) event.getSource())
+                            .getScene().getWindow();
+                    currentStage.close();
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Erreur ouverture chat");
+                    alert.setContentText("Erreur : " + ex.getMessage());
+                    alert.showAndWait();
+                }
 
             } else {
-
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setContentText("Nom Utilisateur ou mot de passe incorrect");
                 alert.showAndWait();
@@ -123,18 +120,14 @@ public class LoginController {
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/client/inscription.fxml")
             );
-
             Parent root = loader.load();
-
             Stage stage = new Stage();
             stage.setTitle("Inscription");
             stage.setScene(new Scene(root));
+            stage.setResizable(false);
             stage.show();
-
-            // Fermer la fenetre actuelle (connexion)
             Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             currentStage.close();
-
         } catch (IOException e) {
             e.printStackTrace();
         }

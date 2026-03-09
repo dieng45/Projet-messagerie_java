@@ -11,47 +11,75 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="576.0" prefWidth="716.0" style="-fx-background-color: linear-gradient(to bottom right, #0f2027, #203a43, #2c5364);" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.association.messagerieg2.client.ChatController">
-   <top>
-      <VBox prefHeight="76.0" prefWidth="716.0" BorderPane.alignment="CENTER">
-         <children>
-            <Label alignment="CENTER" prefHeight="35.0" prefWidth="707.0" text="Messagerie" textFill="WHITE">
-               <font>
-                  <Font name="System Bold" size="24.0" />
-               </font>
-            </Label>
-         </children>
-      </VBox>
-   </top>
-   <left>
-      <VBox prefHeight="448.0" prefWidth="195.0" BorderPane.alignment="CENTER">
-         <children>
-            <Label alignment="CENTER" prefHeight="19.0" prefWidth="200.0" text="Membres" textFill="#fbfbfb">
-               <font>
-                  <Font size="13.0" />
-               </font>
-            </Label>
-            <ListView fx:id="userListView" prefHeight="383.0" prefWidth="205.0" />
-         </children>
-      </VBox>
-   </left>
-   <center>
-      <ScrollPane fx:id="message" prefHeight="427.0" prefWidth="521.0" style="-fx-padding: 10; -fx-background-color: transparent; -fx-border-radius: 10; -fx-background-radius: 10;" BorderPane.alignment="CENTER">
-         <content>
-             <VBox fx:id="messageContainer" style="-fx-padding: 15; -fx-spacing: 10; -fx-background-radius: 15; -fx-background-color: rgba(255,255,255,0.08);spaning" />
-         </content>
-      </ScrollPane>
-   </center>
-   <bottom>
-      <HBox prefHeight="49.0" prefWidth="716.0" style="-fx-spacing: 15; -fx-padding: 5 0 5 0;" BorderPane.alignment="CENTER">
-         <children>
-            <Button fx:id="fileButton" mnemonicParsing="false" onAction="#handleFile" prefHeight="45.0" prefWidth="100.0" style="-fx-background-color: #e8e8e8; -fx-background-radius: 8; -fx-background-color: white;" text="File" />
-            <TextField fx:id="messageField" prefHeight="39.0" prefWidth="483.0" promptText="Écrivez un message..." style="-fx-padding: 15; -fx-background-color: white; -fx-font-size: 13; -fx-background-radius: 8; -fx-border-radius: 8; -fx-padding: 0 10;" />
-            <Button fx:id="sendButton" mnemonicParsing="false" onAction="#handleSend" prefHeight="45.0" prefWidth="100.0" style="-fx-background-color: white; -fx-font-size: 13; -fx-background-radius: 8; -fx-cursor: hand;" text="Envoyer" />
-         </children>
-         <BorderPane.margin>
-            <Insets />
-         </BorderPane.margin>
-      </HBox>
-   </bottom>
+<BorderPane prefHeight="500.0" prefWidth="700.0"
+            style="-fx-background-color: linear-gradient(to bottom right, #0f2027, #203a43, #2c5364);"
+            xmlns="http://javafx.com/javafx/25"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.association.messagerieg2.client.ChatController">
+
+    <!-- TITRE -->
+    <top>
+        <Label alignment="CENTER" prefHeight="40.0" prefWidth="700.0"
+               text="Messagerie" textFill="WHITE"
+               BorderPane.alignment="CENTER">
+            <font><Font name="System Bold" size="22.0" /></font>
+        </Label>
+    </top>
+
+    <!-- LISTE MEMBRES GAUCHE -->
+    <left>
+        <VBox prefWidth="160.0" style="-fx-background-color: rgba(255,255,255,0.05);"
+              BorderPane.alignment="CENTER">
+            <Label alignment="CENTER" prefHeight="28.0" prefWidth="160.0"
+                   text="Membres" textFill="WHITE"
+                   style="-fx-font-size: 13; -fx-padding: 5 0 5 0;" />
+            <ListView fx:id="userListView" VBox.vgrow="ALWAYS" prefWidth="160.0" />
+        </VBox>
+    </left>
+
+    <!-- ZONE CHAT CENTRE -->
+    <center>
+        <VBox BorderPane.alignment="CENTER">
+
+            <!-- HEADER nom + statut -->
+            <HBox fx:id="chatHeader" prefHeight="36.0"
+                  style="-fx-background-color: rgba(255,255,255,0.15); -fx-padding: 6 12; -fx-spacing: 8;"
+                  alignment="CENTER_LEFT">
+                <Label fx:id="receiverNameLabel" text="Sélectionnez un membre" textFill="WHITE">
+                    <font><Font name="System Bold" size="13.0" /></font>
+                </Label>
+                <Label fx:id="receiverStatusLabel" text="" textFill="#aaaaaa">
+                    <font><Font size="11.0" /></font>
+                </Label>
+            </HBox>
+
+            <!-- MESSAGES -->
+            <ScrollPane fx:id="message" VBox.vgrow="ALWAYS" fitToWidth="true"
+                        style="-fx-background-color: transparent; -fx-padding: 5;">
+                <content>
+                    <VBox fx:id="messageContainer" prefWidth="520.0"
+                          style="-fx-padding: 10; -fx-spacing: 6; -fx-background-color: rgba(255,255,255,0.05)" />
+                </content>
+            </ScrollPane>
+
+            <!-- BARRE ENVOI -->
+            <HBox prefHeight="50.0"
+                  style="-fx-spacing: 8; -fx-padding: 6 8; -fx-background-color: rgba(255,255,255,0.08);"
+                  alignment="CENTER">
+                <Button fx:id="fileButton" mnemonicParsing="false" onAction="#handleFile"
+                        prefHeight="35.0" prefWidth="75.0"
+                        style="-fx-background-color: white; -fx-background-radius: 8; -fx-font-size: 11;"
+                        text="Fichier" />
+                <TextField fx:id="messageField" prefHeight="35.0" HBox.hgrow="ALWAYS"
+                           promptText="Écrivez un message..."
+                           style="-fx-padding: 0 10; -fx-background-color: white; -fx-font-size: 12; -fx-background-radius: 8;" />
+                <Button fx:id="sendButton" mnemonicParsing="false" onAction="#handleSend"
+                        prefHeight="35.0" prefWidth="75.0"
+                        style="-fx-background-color: #2c5364; -fx-text-fill: white; -fx-font-size: 12; -fx-background-radius: 8; -fx-cursor: hand;"
+                        text="Envoyer" />
+            </HBox>
+
+        </VBox>
+    </center>
+
 </BorderPane>
