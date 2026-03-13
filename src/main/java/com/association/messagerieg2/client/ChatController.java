@@ -10,16 +10,16 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Parent;
+import javafx.scene.Parent;// scene ,stage :les conteneurs de base pour afficher une fenêtre
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
+import javafx.stage.FileChooser;//ouvre une boîte de dialogue pour sélectionner un fichier
 import javafx.stage.Stage;
-import com.association.messagerieg2.util.JPAUtil;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityTransaction;
+import com.association.messagerieg2.util.JPAUtil; // utilitaire pour obtenir l'EntityManagerFactory (connexion JPA)
+import jakarta.persistence.EntityManager;//permet d'interagir avec la base de données (CRUD)
+import jakarta.persistence.EntityTransaction;//gère les transactions (commit / rollback)
 import java.io.File;
 import java.util.List;
 
