@@ -9,9 +9,18 @@ import java.util.function.Consumer;
 
 public class ServerConnection {
 
+    /**
+      Gère la connexion réseau entre le client et le serveur via des Sockets Java.
+      Les échanges utilisent la sérialisation d'objets (ObjectInputStream / ObjectOutputStream).
+     */
+
     private Socket socket;
     private ObjectOutputStream out;
     private ObjectInputStream in;
+    /**
+     Ouvre la connexion TCP vers le serveur et envoie le nom d'utilisateur
+     pour identification. L'ordre out → in est obligatoire pour éviter un deadlock.
+     */
 
     public void connect(String username) throws Exception {
         socket = new Socket("localhost", 9999);
@@ -24,12 +33,21 @@ public class ServerConnection {
         System.out.println("Connecté au serveur en tant que : " + username);
     }
 
+    /**
+      Encapsule les infos du message dans un DTO (SendMessageRequest)
+      et l'envoie au serveur qui se charge de le router vers le destinataire.
+     */
+
     public void sendMessage(String sender, String receiver, String message) throws Exception {
         SendMessageRequest request = new SendMessageRequest(sender, receiver, message);
         out.writeObject(request);
         out.flush();
     }
 
+    /**
+     Écoute les messages entrants dans un thread séparé pour ne pas bloquer
+      l'interface graphique. Chaque objet reçu est délégué au callback onMessage.
+     */
     // ← Consumer<Object> au lieu de Consumer<SendMessageRequest>
     public void startListening(Consumer<Object> onMessage) {
         new Thread(() -> {
@@ -43,11 +61,18 @@ public class ServerConnection {
             }
         }).start();
     }
+    /**
+      Envoie une demande de transfert de fichier au serveur (nom, contenu, destinataire).
+     */
 
     public void sendFile(SendFileRequest request) throws Exception {
         out.writeObject(request);
         out.flush();
     }
+    /**
+     Ferme le socket — ce qui ferme automatiquement les flux associés.
+     Le serveur détectera la déconnexion et libérera les ressources.
+     */
 
     public void disconnect() {
         try {

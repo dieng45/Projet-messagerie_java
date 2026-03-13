@@ -25,7 +25,7 @@ import java.util.List;
 
 public class ChatController {
 
-    // ─── Composants JavaFX liés au chat.fxml ────────────────────────────────────
+    //Composants JavaFX liés au chat.fxml
     @FXML private Button fileButton;
     @FXML private ScrollPane message;
     @FXML private VBox messageContainer;
@@ -37,7 +37,7 @@ public class ChatController {
     @FXML private Label avatarLabel;
     @FXML private Button btnDeconnexion; // ← Bouton déconnexion (RG4)
 
-    // ─── Variables internes ──────────────────────────────────────────────────────
+    //  Variables internes
     private User currentUser;
     private ServerConnection serverConnection;
     private final MessageService messageService = new MessageService();
@@ -120,7 +120,7 @@ public class ChatController {
         try {
             if (serverConnection != null) {
                 serverConnection.disconnect();
-                System.out.println("[CLIENT] Socket fermée ✅");
+                System.out.println("[CLIENT] Socket fermée ");
             }
         } catch (Exception ignored) {}
 

@@ -78,8 +78,7 @@
                         <!-- Default configuration for running with: mvn clean javafx:run -->
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>com.association.messagerieg2/com.association.messagerieg2.HelloApplication
-                            </mainClass>
+                            <mainClass>com.association.messagerieg2.client.MainApp</mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>
                             <jlinkImageName>app</jlinkImageName>
