@@ -7,17 +7,21 @@ import com.association.messagerieg2.service.MessageService;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import com.association.messagerieg2.util.JPAUtil;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
 import java.io.File;
 import java.util.List;
-import javafx.scene.layout.HBox;
 
 public class ChatController {
 
@@ -31,6 +35,7 @@ public class ChatController {
     @FXML private Label receiverNameLabel;
     @FXML private Label receiverStatusLabel;
     @FXML private Label avatarLabel;
+    @FXML private Button btnDeconnexion; // ← Bouton déconnexion (RG4)
 
     // ─── Variables internes ──────────────────────────────────────────────────────
     private User currentUser;
@@ -86,6 +91,60 @@ public class ChatController {
     }
 
     /**
+     * Gère la déconnexion de l'utilisateur (RG4).
+     * — Passe le statut à OFFLINE en base de données
+     * — Ferme proprement la connexion socket
+     * — Redirige vers la page de connexion
+     */
+    @FXML
+    private void handleDeconnexion(ActionEvent event) {
+
+        // RG4 : passe le statut à OFFLINE en BD
+        EntityManager em = JPAUtil.getFactoryEntityManagerFactory().createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            User user = em.find(User.class, currentUser.getId());
+            user.setStatus(User.Status.OFFLINE);
+            em.merge(user);
+            tx.commit();
+            System.out.println("[CLIENT] Statut → OFFLINE pour " + currentUser.getUsername());
+        } catch (Exception e) {
+            if (tx.isActive()) tx.rollback();
+            e.printStackTrace();
+        } finally {
+            em.close();
+        }
+
+        // Ferme la connexion socket proprement (RG10)
+        try {
+            if (serverConnection != null) {
+                serverConnection.disconnect();
+                System.out.println("[CLIENT] Socket fermée ✅");
+            }
+        } catch (Exception ignored) {}
+
+        // Redirige vers la page de connexion
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/client/login.fxml"));
+            Parent root = loader.load();
+            Stage stage = new Stage();
+            stage.setTitle("Connexion");
+            stage.setScene(new Scene(root));
+            stage.setResizable(false);
+            stage.show();
+
+            // Ferme la page chat
+            Stage currentStage = (Stage) btnDeconnexion.getScene().getWindow();
+            currentStage.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * Charge la liste des membres dans la sidebar.
      * RG13 : ORGANISATEUR voit TOUS les membres (online + offline).
      * MEMBRE/BENEVOLE : voient seulement les membres ONLINE (RG4).
@@ -115,7 +174,7 @@ public class ChatController {
             userListView.getItems().clear();
             userListView.getItems().addAll(usernames);
 
-            // Personnalise l'affichage de chaque cellule avec avatar + nom + rôle + statut
+            // Personnalise chaque cellule avec avatar + nom + rôle + statut
             userListView.setCellFactory(lv -> new ListCell<String>() {
                 @Override
                 protected void updateItem(String username, boolean empty) {
@@ -188,7 +247,7 @@ public class ChatController {
 
                     setGraphic(cellule);
 
-                    // Style de la cellule sélectionnée
+                    // Fond de cellule sélectionnée
                     if (isSelected()) {
                         setStyle("-fx-background-color: #1c2333;");
                     } else {
@@ -280,6 +339,7 @@ public class ChatController {
 
     /**
      * Envoie un message texte au destinataire sélectionné (RG5, RG7).
+     * Vérifie que le message n'est pas vide et ne dépasse pas 1000 caractères.
      */
     @FXML
     void handleSend(ActionEvent event) {
@@ -313,7 +373,8 @@ public class ChatController {
     }
 
     /**
-     * Ouvre le sélecteur de fichier et envoie un fichier au destinataire.
+     * Ouvre le sélecteur de fichiers et envoie un fichier au destinataire.
+     * Supporte les images (png, jpg, gif) et documents (pdf, doc, docx).
      */
     @FXML
     void handleFile(ActionEvent event) {
@@ -344,7 +405,7 @@ public class ChatController {
 
     /**
      * Affiche un fichier (image ou document) dans la conversation.
-     * Bulle droite = envoyé, bulle gauche = reçu.
+     * Bulle violette à droite = envoyé, bulle grise à gauche = reçu.
      */
     private void addFileMessage(String fileName, byte[] fileData, boolean isSent) {
         VBox bubble = new VBox(5);
@@ -375,8 +436,8 @@ public class ChatController {
 
     /**
      * Crée et affiche une bulle de message texte.
-     * Bulle droite (violet) = message envoyé.
-     * Bulle gauche (gris foncé) = message reçu.
+     * Bulle violette droite = envoyé, bulle grise gauche = reçu.
+     * Affiche ✓✓ bleu si destinataire en ligne, ✓✓ gris si hors ligne.
      */
     private void addMessage(String message, boolean isSent) {
         String heure = java.time.LocalTime.now()
@@ -396,17 +457,17 @@ public class ChatController {
             boolean receiverOnline = receiver != null && isUserOnline(receiver);
 
             if (receiverOnline) {
-                // 2 traits BLEUS = message lu (en ligne)
+                // ✓✓ BLEU = destinataire en ligne (lu)
                 statutLecture = " ✓✓";
                 couleurStatut = "#4fc3f7";
             } else {
-                // 2 traits GRIS = envoyé mais pas lu (hors ligne)
+                // ✓✓ GRIS = destinataire hors ligne (pas encore lu)
                 statutLecture = " ✓✓";
                 couleurStatut = "#8892b0";
             }
         }
 
-        // Ligne heure + statut
+        // Ligne heure + statut de lecture
         HBox timeRow = new HBox(2);
         Label timeLabel = new Label(heure);
         timeLabel.setStyle("-fx-font-size: 9; -fx-text-fill: rgba(255,255,255,0.5);");
@@ -433,11 +494,12 @@ public class ChatController {
         }
 
         messageContainer.getChildren().add(bubble);
+        // Scroll automatique vers le bas
         Platform.runLater(() -> this.message.setVvalue(1.0));
     }
 
     /**
-     * Affiche une alerte JavaFX.
+     * Affiche une alerte JavaFX de type WARNING.
      */
     private void showAlert(String titre, String contenu) {
         Alert alert = new Alert(Alert.AlertType.WARNING);

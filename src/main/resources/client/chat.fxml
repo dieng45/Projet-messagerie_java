@@ -22,10 +22,26 @@
         <HBox prefHeight="50.0" prefWidth="900.0"
               style="-fx-background-color: #16213e; -fx-padding: 0 20; -fx-spacing: 12;"
               alignment="CENTER_LEFT">
+
+            <!-- Logo G2 -->
             <Label text="G2" textFill="WHITE"
                    style="-fx-background-color: #533483; -fx-background-radius: 20; -fx-padding: 4 10; -fx-font-weight: bold; -fx-font-size: 13;"/>
+
+            <!-- Titre — pousse le bouton à droite -->
             <Label text="Messagerie Associations" textFill="WHITE"
-                   style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+                   style="-fx-font-size: 14; -fx-font-weight: bold;"
+                   HBox.hgrow="ALWAYS"/>
+
+            <!-- Bouton Déconnexion — RG4 -->
+            <Button fx:id="btnDeconnexion" text="⏻  Déconnexion"
+                    onAction="#handleDeconnexion"
+                    style="-fx-background-color:#533483;
+                           -fx-text-fill: white;
+                           -fx-font-size: 11;
+                           -fx-font-weight: bold;
+                           -fx-background-radius: 8;
+                           -fx-cursor: hand;
+                           -fx-padding: 6 14;"/>
         </HBox>
     </top>
 

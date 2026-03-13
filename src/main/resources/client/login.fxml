@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
@@ -11,7 +10,7 @@
 <?import javafx.scene.text.Font?>
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="590.0" prefWidth="500.0" style="-fx-background-color: #1a1a2e;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.association.messagerieg2.client.LoginController">
-   <center>
+   <left>
       <AnchorPane prefHeight="590.0" prefWidth="484.0" BorderPane.alignment="CENTER">
          <children>
             <Label layoutX="60.0" layoutY="167.0" prefHeight="20.0" prefWidth="145.0" text="NOM D'UTILISATEUR" textFill="WHITE">
@@ -19,7 +18,7 @@
                   <Font size="14.0" />
                </font>
             </Label>
-            <Label layoutX="61.0" layoutY="244.0" prefHeight="20.0" prefWidth="102.0" text="MOT DE PASSE" textFill="WHITE">
+            <Label layoutX="60.0" layoutY="247.0" prefHeight="20.0" prefWidth="102.0" text="MOT DE PASSE" textFill="WHITE">
                <font>
                   <Font size="14.0" />
                </font>
@@ -30,32 +29,15 @@
                </font></TextField>
              <StackPane layoutX="60.0" layoutY="276.0" prefHeight="43.0" prefWidth="392.0">
                  <children>
-                     <PasswordField fx:id="MotDePasse" prefHeight="43.0" prefWidth="392.0"
-                                    promptText="•••••"
-                                    style="-fx-background-color: #30363d; -fx-background-radius: 8; -fx-text-fill: #ccd6f6;"/>
+                     <PasswordField fx:id="MotDePasse" prefHeight="43.0" prefWidth="392.0" promptText="•••••" style="-fx-background-color: #30363d; -fx-background-radius: 8; -fx-text-fill: #ccd6f6;" />
 
-                     <TextField fx:id="MotDePasseVisible" prefHeight="43.0" prefWidth="392.0"
-                                promptText="•••••"
-                                style="-fx-background-color: #30363d; -fx-background-radius: 8; -fx-text-fill: white;"/>
+                     <TextField fx:id="MotDePasseVisible" prefHeight="43.0" prefWidth="392.0" promptText="•••••" style="-fx-background-color: #30363d; -fx-background-radius: 8; -fx-text-fill: white;" />
 
                      <!-- Le Button TOUJOURS EN DERNIER pour rester au dessus -->
-                     <Button fx:id="togglePassword"
-                             mnemonicParsing="false"
-                             text="👁"
-                             StackPane.alignment="CENTER_RIGHT"
-                             prefWidth="40" prefHeight="43"
-                             style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-cursor: hand; -fx-font-size: 14; -fx-padding: 0 10 0 0;"/>
+                     <Button fx:id="togglePassword" mnemonicParsing="false" prefHeight="43" prefWidth="40" style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-cursor: hand; -fx-font-size: 14; -fx-padding: 0 10 0 0;" text="👁" StackPane.alignment="CENTER_RIGHT" />
                  </children>
              </StackPane>
-             <Button fx:id="btnSeConnecter" layoutX="61.0" layoutY="370.0"
-                     mnemonicParsing="false" onAction="#gererConnexion"
-                     prefHeight="37.0" prefWidth="388.0"
-                     text="Se Connecter"
-                     style="-fx-background-color: #533483;
-               -fx-text-fill: white;
-               -fx-font-size: 13;
-               -fx-font-weight: bold;
-               -fx-background-radius: 8;"/>
+             <Button fx:id="btnSeConnecter" layoutX="61.0" layoutY="351.0" mnemonicParsing="false" onAction="#gererConnexion" prefHeight="37.0" prefWidth="388.0" style="-fx-background-color: #533483;                -fx-text-fill: white;                -fx-font-size: 13;                -fx-font-weight: bold;                -fx-background-radius: 8;" text="Se Connecter" />
             <Label alignment="CENTER" layoutX="-1.0" layoutY="64.0" prefHeight="30.0" prefWidth="500.0" text="Messagerie Associations" textFill="WHITE">
                <font>
                   <Font name="System Bold" size="20.0" />
@@ -67,13 +49,9 @@
                </font>
             </Label>
 
-             <Button fx:id="btnSeConnecter1" layoutX="61.0" layoutY="490" mnemonicParsing="false" onAction="#ouvrirInscription" prefHeight="37.0" prefWidth="388.0" text="Créer un compte" style="-fx-background-color: #533483;
-               -fx-text-fill: white;
-               -fx-font-size: 13;
-               -fx-font-weight: bold;
-               -fx-background-radius: 8;"/>
-            <Label layoutX="227.0" layoutY="430" prefHeight="17.0" prefWidth="56.0" text="—  ou  —" textFill="WHITE" />
+             <Button fx:id="btnSeConnecter1" layoutX="61.0" layoutY="445.0" mnemonicParsing="false" onAction="#ouvrirInscription" prefHeight="37.0" prefWidth="388.0" style="-fx-background-color: #533483;                -fx-text-fill: white;                -fx-font-size: 13;                -fx-font-weight: bold;                -fx-background-radius: 8;" text="Créer un compte" />
+            <Label layoutX="227.0" layoutY="412.0" prefHeight="17.0" prefWidth="56.0" text="—  ou  —" textFill="WHITE" />
          </children>
       </AnchorPane>
-   </center>
+   </left>
 </BorderPane>
