@@ -47,21 +47,18 @@ public class ChatController {
     private static final String COLOR_MEMBRE       = "#1c4a6e";
     private static final String COLOR_BENEVOLE     = "#1b3a2e";
 
-    /**
-     * Appelée depuis LoginController après connexion réussie.
-     * Injecte l'utilisateur, charge la sidebar et démarre le socket.
-     */
+    //Appelée après connexion réussie. Injecte l'utilisateur connecté,
+    // charge la liste des membres et démarre la connexion au serveur.
+
     public void setCurrentUser(User user) {
         this.currentUser = user;
         loadConnectedUsers();
         new Thread(() -> connectToServer()).start();
     }
 
-    /**
-     * Connexion au serveur via socket .
-     * Écoute les messages et fichiers entrants en temps réel.
-     * En cas d'échec  mode hors ligne.
-     */
+    //Connecte le client au serveur via Socket. Écoute en temps réel les messages
+    // et fichiers entrants. En cas d'échec → mode hors ligne.
+
     private void connectToServer() {
         try {
             serverConnection = new ServerConnection();
@@ -90,12 +87,7 @@ public class ChatController {
         }
     }
 
-    /**
-     * Gère la déconnexion de l'utilisateur (RG4).
-     * — Passe le statut à OFFLINE en base de données
-     * — Ferme proprement la connexion socket
-     * — Redirige vers la page de connexion
-     */
+    //Passe le statut à OFFLINE en BD, ferme le socket proprement, redirige vers la page de connexion.
     @FXML
     private void handleDeconnexion(ActionEvent event) {
 
@@ -144,11 +136,10 @@ public class ChatController {
         }
     }
 
-    /**
-     * Charge la liste des membres dans la sidebar.
-     * RG13 : ORGANISATEUR voit TOUS les membres (online + offline).
-     * MEMBRE/BENEVOLE : voient seulement les membres ONLINE (RG4).
-     */
+    //Charge la liste des membres dans la sidebar.
+    //  ORGANISATEUR voit TOUS les membres (online + offline).
+    // MEMBRE/BENEVOLE : voient seulement les membres ONLINE
+
     private void loadConnectedUsers() {
         EntityManager em = JPAUtil.getFactoryEntityManagerFactory().createEntityManager();
         try {
@@ -263,10 +254,9 @@ public class ChatController {
         }
     }
 
-    /**
-     * Initialise le listener de sélection dans la liste des membres.
-     * Au clic sur un membre → charge l'historique et met à jour le header.
-     */
+    //Initialise le listener sur la ListView.
+    // Au clic sur un membre → charge automatiquement la conversation.
+
     @FXML
     public void initialize() {
         userListView.getSelectionModel().selectedItemProperty().addListener(
@@ -276,10 +266,9 @@ public class ChatController {
         );
     }
 
-    /**
-     * Charge l'historique de conversation avec un membre (RG8 — ordre chronologique).
-     * Met aussi à jour l'avatar et le statut dans le header.
-     */
+    //Charge l'historique de conversation avec le membre sélectionné. Met à jour le header,
+    // affiche la date et les messages triés par ordre chronologique.
+
     private void loadHistory(String otherUsername) {
         // Met à jour le header
         receiverNameLabel.setText(otherUsername);
@@ -319,9 +308,8 @@ public class ChatController {
         }
     }
 
-    /**
-     * Vérifie si un utilisateur est ONLINE dans la BD.
-     */
+    //Interroge la base de données pour vérifier si un utilisateur est ONLINE ou OFFLINE.
+
     private boolean isUserOnline(String username) {
         EntityManager em = JPAUtil.getFactoryEntityManagerFactory().createEntityManager();
         try {
@@ -337,10 +325,8 @@ public class ChatController {
         }
     }
 
-    /**
-     * Envoie un message texte au destinataire sélectionné (RG5, RG7).
-     * Vérifie que le message n'est pas vide et ne dépasse pas 1000 caractères.
-     */
+    //Envoie un message texte. Vérifie qu'il n'est pas vide et ne dépasse pas 1000 caractères.
+
     @FXML
     void handleSend(ActionEvent event) {
         String contenu = messageField.getText().trim();
@@ -372,10 +358,8 @@ public class ChatController {
         }
     }
 
-    /**
-     * Ouvre le sélecteur de fichiers et envoie un fichier au destinataire.
-     * Supporte les images (png, jpg, gif) et documents (pdf, doc, docx).
-     */
+    //Ouvre le sélecteur de fichiers et envoie une image ou un document au destinataire.
+
     @FXML
     void handleFile(ActionEvent event) {
         String receiver = userListView.getSelectionModel().getSelectedItem();
@@ -403,10 +387,7 @@ public class ChatController {
         }
     }
 
-    /**
-     * Affiche un fichier (image ou document) dans la conversation.
-     * Bulle violette à droite = envoyé, bulle grise à gauche = reçu.
-     */
+//Affiche un fichier reçu ou envoyé dans la conversation sous forme de bulle.
     private void addFileMessage(String fileName, byte[] fileData, boolean isSent) {
         VBox bubble = new VBox(5);
         if (fileName.matches(".*\\.(png|jpg|jpeg|gif)$")) {
@@ -434,11 +415,9 @@ public class ChatController {
         Platform.runLater(() -> this.message.setVvalue(1.0));
     }
 
-    /**
-     * Crée et affiche une bulle de message texte.
-     * Bulle violette droite = envoyé, bulle grise gauche = reçu.
-     * Affiche ✓✓ bleu si destinataire en ligne, ✓✓ gris si hors ligne.
-     */
+    //Crée et affiche une bulle de message. Violet à droite si envoyé, gris à gauche si reçu.
+    // Affiche ✓✓ bleu ou gris selon le statut du destinataire.
+
     private void addMessage(String message, boolean isSent) {
         String heure = java.time.LocalTime.now()
                 .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
@@ -498,16 +477,14 @@ public class ChatController {
         Platform.runLater(() -> this.message.setVvalue(1.0));
     }
 
-    /**
-     * Affiche une alerte JavaFX de type WARNING.
-     */
+    //Affiche une boîte de dialogue d'avertissement avec un message à l'utilisateur.
     private void showAlert(String titre, String contenu) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle(titre);
         alert.setContentText(contenu);
         alert.showAndWait();
     }
-
+//Ferme le socket proprement. Appelée quand l'utilisateur ferme la fenêtre avec le X.
     public void deconnecterSocket() {
         try {
             if (serverConnection != null) serverConnection.disconnect();

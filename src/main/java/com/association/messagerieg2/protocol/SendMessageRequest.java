@@ -1,6 +1,7 @@
 package com.association.messagerieg2.protocol;
 
-import java.io.Serializable;
+import java.io.Serializable; //Serializable permet de transformer un objet Java
+                             // en bytes pour l'envoyer sur le réseau via le socket.
 
 public class SendMessageRequest implements Serializable {
     private static final long serialVersionUID = 1L;

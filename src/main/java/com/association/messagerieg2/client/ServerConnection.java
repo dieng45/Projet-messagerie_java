@@ -49,10 +49,15 @@ public class ServerConnection {
         }).start();
     }
 
+    //Elle prend un fichier (image ou document),
+    // le met dans un objet et l'envoie au serveur via le socket.
+
     public void sendFile(SendFileRequest request) throws Exception {
         out.writeObject(request);
         out.flush();
     }
+//Ferme proprement le Socket. Appelée lors du clic sur Déconnexion (RG4)
+// ou en cas de perte réseau (RG10).
 
     public void disconnect() {
         try {

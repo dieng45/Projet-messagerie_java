@@ -3,6 +3,8 @@ package com.association.messagerieg2.model;
 import java.time.LocalDateTime;
 import jakarta.persistence.*;
 
+    // Entité JPA représentant un utilisateur de l'application.
+    //  Correspond à la table "users" dans la base de données.
 @Entity
 @Table(name = "users")
 public class User {
@@ -17,7 +19,7 @@ public class User {
         ONLINE,
         OFFLINE
     }
-
+ //Identifiant unique auto-incrémenté par la BD
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -94,6 +96,7 @@ public class User {
     public void setDateCreation(LocalDateTime date_creation) {
         this.date_creation = date_creation;
     }
+// Représentation textuelle de l'utilisateur pour les logs et le débogage.
 
     @Override
     public String toString() {

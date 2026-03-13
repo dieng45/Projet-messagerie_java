@@ -29,12 +29,12 @@ public class LoginController {
     @FXML private TextField MotDePasseVisible;
     @FXML private Button togglePassword;
     private boolean passwordVisible = false;
-
+//initialise la page: cache le champ mot de passe visible, configure le bouton pour afficher/masquer le mot de passe
     @FXML
     public void initialize() {
         MotDePasseVisible.setVisible(false);
 
-        // ← AJOUTE CETTE LIGNE pour que l'icône soit blanc dès le départ
+        // AJOUTE CETTE LIGNE pour que l'icône soit blanc dès le départ
         togglePassword.setStyle("-fx-background-color: transparent; -fx-border-color: transparent; -fx-cursor: hand; -fx-font-size: 14; -fx-padding: 0 10 0 0; -fx-text-fill: white;");
 
         togglePassword.setOnAction(e -> {
@@ -55,6 +55,8 @@ public class LoginController {
         });
     }
     @FXML
+    //permet de de verifier les champs, recherche l'utilisateur en BD avec son mot de passe hache(BCrypt),
+    //passe aussi son statut a ONLINE , dirige vers le chat
     private void gererConnexion(ActionEvent event) {
 
         String username = NomUtilisateur.getText().trim();
@@ -173,6 +175,9 @@ public class LoginController {
     }
 
     @FXML
+    //Quand l'utilisateur clique sur "Créer un compte",
+    // elle ferme la page Connexion et ouvre la page Inscription.
+
     private void ouvrirInscription(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(
@@ -184,8 +189,15 @@ public class LoginController {
             stage.setScene(new Scene(root));
             stage.setResizable(false);
             stage.show();
+
+           //Récupère la fenêtre Login qui est actuellement ouverte et la ferme — comme ça
+            // les deux fenêtres ne sont pas ouvertes en même temps.
+
             Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             currentStage.close();
+
+            // gestion des erreurs
+
         } catch (IOException e) {
             e.printStackTrace();
         }

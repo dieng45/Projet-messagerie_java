@@ -46,6 +46,8 @@ public class InscriptionController {
             "-fx-background-color: #2d1f0e; -fx-border-color: #e8912a; -fx-border-width: 1.5; -fx-border-radius: 8; -fx-background-radius: 8; -fx-text-fill: #ccd6f6; -fx-font-size: 13;";
 
     @FXML
+// configure le comboBox des roles ,initialise les 2 boutons pour le mot de passe et confirmation ,
+    // cache les TexFiel visibles.
     public void initialize() {
 
         // Style de la liste déroulante
@@ -126,6 +128,8 @@ public class InscriptionController {
     }
 
     @FXML
+//valide les champs,verifie l'unicite du nom ,hache le mot de passe , cree l'utilisateur en BD
+    //cree l'utilisateur en BD, passe le statut a ONLINE, redirige vers le chat.
 
     private void inscrireUtilisateur() {
 
@@ -245,35 +249,4 @@ public class InscriptionController {
         }
     }
 
-
-    @FXML
-    private void retournerConnexion(ActionEvent event) {
-        if (!inscriptionReussie) {
-            showAlert(Alert.AlertType.WARNING, "Vous devez d'abord vous inscrire !");
-            return;
-        }
-        try {
-            FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/client/login.fxml"));
-            Parent root = loader.load();
-            Stage stage = new Stage();
-            stage.setTitle("Login");
-            stage.setScene(new Scene(root));
-            stage.setResizable(false);
-            stage.show();
-
-            Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            currentStage.close();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void showAlert(Alert.AlertType type, String message) {
-        Alert alert = new Alert(type);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
 }
