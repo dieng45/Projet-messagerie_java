@@ -13,6 +13,10 @@ public class ServerConnection {
     private ObjectOutputStream out;
     private ObjectInputStream in;
 
+   // Connect (cree un Socket vers localhost ouvre deux flux:
+   // ObjectOutputStream pour ecrire et ObjectInputStream pour lire
+    // envoie le nom d'utilisateur pour s'identifier)
+
     public void connect(String username) throws Exception {
         socket = new Socket("localhost", 9999);
         out    = new ObjectOutputStream(socket.getOutputStream());
@@ -24,6 +28,7 @@ public class ServerConnection {
         System.out.println("Connecté au serveur en tant que : " + username);
     }
 
+    //sendMessage creer un objet  SendMessageRequest avec sender, receiver et contenu.
     public void sendMessage(String sender, String receiver, String message) throws Exception {
         SendMessageRequest request = new SendMessageRequest(sender, receiver, message);
         out.writeObject(request);

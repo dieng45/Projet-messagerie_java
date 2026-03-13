@@ -130,7 +130,7 @@ public class LoginController {
                             u.setStatus(User.Status.OFFLINE);
                             em2.merge(u);
                             tx2.commit();
-                            System.out.println("[CLIENT] Fenêtre X fermée → statut OFFLINE ✅");
+                            System.out.println("[CLIENT] Fenêtre X fermée → statut OFFLINE ");
                         } catch (Exception ex2) {
                             if (tx2.isActive()) tx2.rollback();
                         } finally {

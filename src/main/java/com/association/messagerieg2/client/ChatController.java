@@ -58,9 +58,9 @@ public class ChatController {
     }
 
     /**
-     * Connexion au serveur via socket (RG11 — thread séparé).
+     * Connexion au serveur via socket .
      * Écoute les messages et fichiers entrants en temps réel.
-     * En cas d'échec → mode hors ligne (RG10).
+     * En cas d'échec  mode hors ligne.
      */
     private void connectToServer() {
         try {
@@ -83,7 +83,7 @@ public class ChatController {
                 });
             });
 
-            System.out.println("[CLIENT] Connecté au serveur ✅");
+            System.out.println("[CLIENT] Connecté au serveur ");
 
         } catch (Exception e) {
             System.err.println("[CLIENT] Serveur non disponible — mode hors ligne (RG10)");
@@ -120,7 +120,7 @@ public class ChatController {
         try {
             if (serverConnection != null) {
                 serverConnection.disconnect();
-                System.out.println("[CLIENT] Socket fermée ✅");
+                System.out.println("[CLIENT] Socket fermée ");
             }
         } catch (Exception ignored) {}
 
