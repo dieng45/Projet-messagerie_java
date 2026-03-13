@@ -13,7 +13,7 @@ public class ChatServer {
     private static final int PORT = 9999;
 
     private static final Map<String, ClientHandler> connectedClients = new ConcurrentHashMap<>();
-
+ //il atend les deux utilisateur utilise le port pour les servir
     public static void main(String[] args) {
         System.out.println("[SERVER] Démarrage sur le port " + PORT + "...");
 
@@ -25,7 +25,7 @@ public class ChatServer {
 
                 new Thread(() -> {
                     try {
-                        // ⚠️ ObjectOutputStream TOUJOURS EN PREMIER
+                        // ⚠ ObjectOutputStream TOUJOURS EN PREMIER
                         ObjectOutputStream tmpOut =
                                 new ObjectOutputStream(clientSocket.getOutputStream());
                         tmpOut.flush();

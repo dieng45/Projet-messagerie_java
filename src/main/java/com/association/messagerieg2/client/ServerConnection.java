@@ -9,9 +9,18 @@ import java.util.function.Consumer;
 
 public class ServerConnection {
 
+    /**
+      Gère la connexion réseau entre le client et le serveur via des Sockets Java.
+      Les échanges utilisent la sérialisation d'objets (ObjectInputStream / ObjectOutputStream).
+     */
+
     private Socket socket;
     private ObjectOutputStream out;
     private ObjectInputStream in;
+    /**
+     Ouvre la connexion TCP vers le serveur et envoie le nom d'utilisateur
+     pour identification. L'ordre out → in est obligatoire pour éviter un deadlock.
+     */
 
    // Connect (cree un Socket vers localhost ouvre deux flux:
    // ObjectOutputStream pour ecrire et ObjectInputStream pour lire
@@ -28,13 +37,25 @@ public class ServerConnection {
         System.out.println("Connecté au serveur en tant que : " + username);
     }
 
+<<<<<<< HEAD
     //sendMessage creer un objet  SendMessageRequest avec sender, receiver et contenu.
+=======
+    /**
+      Encapsule les infos du message dans un DTO (SendMessageRequest)
+      et l'envoie au serveur qui se charge de le router vers le destinataire.
+     */
+
+>>>>>>> eebda4cc2867b51e33f1c3ef6b6d4061af64804d
     public void sendMessage(String sender, String receiver, String message) throws Exception {
         SendMessageRequest request = new SendMessageRequest(sender, receiver, message);
         out.writeObject(request);
         out.flush();
     }
 
+    /**
+     Écoute les messages entrants dans un thread séparé pour ne pas bloquer
+      l'interface graphique. Chaque objet reçu est délégué au callback onMessage.
+     */
     // ← Consumer<Object> au lieu de Consumer<SendMessageRequest>
     public void startListening(Consumer<Object> onMessage) {
         new Thread(() -> {
@@ -48,6 +69,9 @@ public class ServerConnection {
             }
         }).start();
     }
+    /**
+      Envoie une demande de transfert de fichier au serveur (nom, contenu, destinataire).
+     */
 
     //Elle prend un fichier (image ou document),
     // le met dans un objet et l'envoie au serveur via le socket.
@@ -56,8 +80,15 @@ public class ServerConnection {
         out.writeObject(request);
         out.flush();
     }
+<<<<<<< HEAD
 //Ferme proprement le Socket. Appelée lors du clic sur Déconnexion (RG4)
 // ou en cas de perte réseau (RG10).
+=======
+    /**
+     Ferme le socket — ce qui ferme automatiquement les flux associés.
+     Le serveur détectera la déconnexion et libérera les ressources.
+     */
+>>>>>>> eebda4cc2867b51e33f1c3ef6b6d4061af64804d
 
     public void disconnect() {
         try {
