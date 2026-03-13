@@ -18,45 +18,75 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import java.io.IOException;
 
+
+
 public class LoginController {
 
     @FXML private PasswordField MotDePasse;
     @FXML private TextField NomUtilisateur;
     @FXML private Button bntsinscrire;
     @FXML private Button btnSeConnecter;
+    @FXML private TextField MotDePasseVisible;
+    @FXML private Button togglePassword;
+    private boolean passwordVisible = false;
 
+    @FXML
+    public void initialize() {
+        MotDePasseVisible.setVisible(false);
+
+        // ← AJOUTE CETTE LIGNE pour que l'icône soit blanc dès le départ
+        togglePassword.setStyle("-fx-background-color: transparent; -fx-border-color: transparent; -fx-cursor: hand; -fx-font-size: 14; -fx-padding: 0 10 0 0; -fx-text-fill: white;");
+
+        togglePassword.setOnAction(e -> {
+            passwordVisible = !passwordVisible;
+            if (passwordVisible) {
+                MotDePasseVisible.setText(MotDePasse.getText());
+                MotDePasse.setVisible(false);
+                MotDePasseVisible.setVisible(true);
+                togglePassword.setText("\uD83D\uDD12");
+                togglePassword.setStyle("-fx-background-color: transparent; -fx-border-color: transparent; -fx-cursor: hand; -fx-font-size: 14; -fx-padding: 0 10 0 0; -fx-text-fill: white;");
+            } else {
+                MotDePasse.setText(MotDePasseVisible.getText());
+                MotDePasseVisible.setVisible(false);
+                MotDePasse.setVisible(true);
+                togglePassword.setText("\uD83D\uDD13");
+                togglePassword.setStyle("-fx-background-color: transparent; -fx-border-color: transparent; -fx-cursor: hand; -fx-font-size: 14; -fx-padding: 0 10 0 0; -fx-text-fill: white;");
+            }
+        });
+    }
     @FXML
     private void gererConnexion(ActionEvent event) {
 
         String username = NomUtilisateur.getText().trim();
-        String password = MotDePasse.getText().trim();
+        String password = passwordVisible
+                ? MotDePasseVisible.getText().trim()
+                : MotDePasse.getText().trim();
 
-        NomUtilisateur.setStyle(null);
-        MotDePasse.setStyle(null);
+        // Reset style normal
+        NomUtilisateur.setStyle("-fx-background-color: #30363d; -fx-border-radius: 8; -fx-background-radius: 8; -fx-text-fill: #ccd6f6;");
+        MotDePasse.setStyle("-fx-background-color: #30363d; -fx-background-radius: 8; -fx-text-fill: #ccd6f6;");
 
         boolean erreur = false;
 
         if (username.isEmpty()) {
-            NomUtilisateur.setStyle("-fx-border-color: red;");
-            NomUtilisateur.setPromptText("Champ obligatoire");
+            NomUtilisateur.setStyle("-fx-background-color: #2d1f0e; -fx-border-color: #e8912a; -fx-border-width: 1.5; -fx-border-radius: 8; -fx-background-radius: 8; -fx-text-fill: #ccd6f6;");
+            NomUtilisateur.setPromptText("⚠ Ce champ est obligatoire");
             erreur = true;
         }
 
         if (password.isEmpty()) {
-            MotDePasse.setStyle("-fx-border-color: red;");
-            MotDePasse.setPromptText("Champ obligatoire");
+            MotDePasse.setStyle("-fx-background-color: #2d1f0e; -fx-border-color: #e8912a; -fx-border-width: 1.5; -fx-background-radius: 8; -fx-text-fill: #ccd6f6;");
+            MotDePasse.setPromptText("⚠ Ce champ est obligatoire");
             erreur = true;
         }
 
         if (erreur) return;
 
-        // ← DEBUG : voir le hash généré
         String hashedPassword = PasswordUtil.hash(password);
         System.out.println("[DEBUG] Hash généré : " + hashedPassword);
 
         EntityManager em = JPAUtil.getFactoryEntityManagerFactory().createEntityManager();
         try {
-
             User user = em.createQuery(
                             "SELECT u FROM User u WHERE u.username = :username AND u.password = :password",
                             User.class)
@@ -67,7 +97,6 @@ public class LoginController {
                     .orElse(null);
 
             if (user != null) {
-
                 EntityTransaction transaction = em.getTransaction();
                 transaction.begin();
                 user.setStatus(User.Status.ONLINE);
@@ -102,9 +131,11 @@ public class LoginController {
                 }
 
             } else {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setContentText("Nom Utilisateur ou mot de passe incorrect");
-                alert.showAndWait();
+                // Mauvais identifiants — bordure violette
+                NomUtilisateur.setStyle("-fx-background-color: #1f1525; -fx-border-color: #a855f7; -fx-border-width: 1.5; -fx-border-radius: 8; -fx-background-radius: 8; -fx-text-fill: #ccd6f6;");
+                MotDePasse.setStyle("-fx-background-color: #1f1525; -fx-border-color: #a855f7; -fx-border-width: 1.5; -fx-background-radius: 8; -fx-text-fill: #ccd6f6;");
+                NomUtilisateur.setPromptText("Identifiants incorrects");
+                MotDePasse.setPromptText("Identifiants incorrects");
             }
 
         } catch (Exception e) {
@@ -112,6 +143,7 @@ public class LoginController {
         } finally {
             em.close();
         }
+
     }
 
     @FXML

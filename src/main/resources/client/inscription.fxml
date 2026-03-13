@@ -6,28 +6,96 @@
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.association.messagerieg2.client.InscriptionController">
-   <children>
-      <Label alignment="CENTER" layoutX="240.0" layoutY="39.0" prefHeight="17.0" prefWidth="153.0" text="Inscription">
-         <font>
-            <Font name="Verdana Bold" size="14.0" />
-         </font>
-      </Label>
-      <Label fx:id="MotdepasseIns" layoutX="132.0" layoutY="150.0" prefHeight="17.0" prefWidth="153.0" text="Mot De Passe" />
-      <Label fx:id="NomutilisateurIns" layoutX="133.0" layoutY="102.0" prefHeight="17.0" prefWidth="153.0" text="Nom Utilisateur">
-         <font>
-            <Font name="Verdana" size="12.0" />
-         </font>
-      </Label>
-      <Label fx:id="Role" layoutX="133.0" layoutY="241.0" prefHeight="17.0" prefWidth="153.0" text="Role" />
-      <Label fx:id="Confirmotdepasse" layoutX="132.0" layoutY="200.0" prefHeight="17.0" prefWidth="153.0" text="Confirmer Mot de passe" />
-      <TextField fx:id="txtinsnom" layoutX="333.0" layoutY="98.0" />
-      <PasswordField fx:id="txtmotdepasse" layoutX="333.0" layoutY="146.0" />
-      <PasswordField fx:id="txtconfirm" layoutX="333.0" layoutY="196.0" />
-      <ComboBox fx:id="txtrole" layoutX="333.0" layoutY="245.0" prefWidth="150.0" />
-      <Button fx:id="btninscri" layoutX="196.0" layoutY="297.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="217.0" text="S'inscrire" onAction="#inscrireUtilisateur"/>
-      <Button fx:id="bntretourconnexion" layoutX="196.0" layoutY="331.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="217.0" text="Se Connecter" onAction="#retournerConnexion" />
-   </children>
-</AnchorPane>
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="620.0" prefWidth="500.0" style="-fx-background-color: #1a1a2e;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.association.messagerieg2.client.InscriptionController">
+    <center>
+        <AnchorPane prefHeight="620.0" prefWidth="500.0" BorderPane.alignment="CENTER">
+            <children>
+
+                <!-- Titre -->
+                <Label alignment="CENTER" layoutX="-1.0" layoutY="50.0" prefHeight="30.0" prefWidth="500.0" text="Messagerie Associations" textFill="WHITE">
+                    <font><Font name="System Bold" size="20.0" /></font>
+                </Label>
+
+                <!-- Sous-titre -->
+                <Label alignment="CENTER" layoutX="1.0" layoutY="85.0" prefHeight="20.0" prefWidth="500.0" text="Créez votre compte membre" textFill="WHITE">
+                    <font><Font size="14.0" /></font>
+                </Label>
+
+                <!-- Label Nom Utilisateur -->
+                <Label fx:id="NomutilisateurIns" layoutX="60.0" layoutY="130.0" prefHeight="20.0" prefWidth="200.0" text="NOM D'UTILISATEUR" textFill="WHITE">
+                    <font><Font size="13.0" /></font>
+                </Label>
+
+                <!-- Champ Nom Utilisateur -->
+                <TextField fx:id="txtinsnom" layoutX="60.0" layoutY="155.0" prefHeight="42.0" prefWidth="391.0" promptText="ex : OumouAnne"
+                           style="-fx-background-color: #30363d; -fx-border-radius: 8; -fx-background-radius: 8; -fx-text-fill: #ccd6f6; -fx-font-size: 13;">
+                    <font><Font size="13.0" /></font>
+                </TextField>
+
+                <!-- Label Mot De Passe -->
+                <Label fx:id="MotdepasseIns" layoutX="60.0" layoutY="210.0" prefHeight="20.0" prefWidth="153.0" text="MOT DE PASSE" textFill="WHITE">
+                    <font><Font size="13.0" /></font>
+                </Label>
+
+                <!-- Champ Mot De Passe -->
+                <StackPane layoutX="60.0" layoutY="235.0" prefHeight="42.0" prefWidth="391.0">
+                    <children>
+                        <PasswordField fx:id="txtmotdepasse" prefHeight="42.0" prefWidth="391.0" promptText="•••••••"
+                                       style="-fx-background-color: #30363d; -fx-background-radius: 8; -fx-text-fill: #ccd6f6; -fx-font-size: 13;"/>
+                        <TextField fx:id="txtmotdepasseVisible" prefHeight="42.0" prefWidth="391.0" promptText="•••••••"
+                                   style="-fx-background-color: #30363d; -fx-background-radius: 8; -fx-text-fill: white; -fx-font-size: 13;"/>
+                        <Button fx:id="toggleMdp" mnemonicParsing="false" text="&#128275;"
+                                StackPane.alignment="CENTER_RIGHT"
+                                prefWidth="40" prefHeight="42"
+                                style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-cursor: hand; -fx-font-size: 14; -fx-padding: 0 10 0 0; -fx-text-fill: white;"/>
+                    </children>
+                </StackPane>
+
+                <!-- Label Confirmer Mot De Passe -->
+                <Label fx:id="Confirmotdepasse" layoutX="60.0" layoutY="292.0" prefHeight="20.0" prefWidth="220.0" text="CONFIRMER MOT DE PASSE" textFill="WHITE">
+                    <font><Font size="13.0" /></font>
+                </Label>
+
+                <!-- Champ Confirmer Mot De Passe -->
+                <StackPane layoutX="60.0" layoutY="317.0" prefHeight="42.0" prefWidth="391.0">
+                    <children>
+                        <PasswordField fx:id="txtconfirm" prefHeight="42.0" prefWidth="391.0" promptText="•••••••"
+                                       style="-fx-background-color: #30363d; -fx-background-radius: 8; -fx-text-fill: #ccd6f6; -fx-font-size: 13;"/>
+                        <TextField fx:id="txtconfirmVisible" prefHeight="42.0" prefWidth="391.0" promptText="•••••••"
+                                   style="-fx-background-color: #30363d; -fx-background-radius: 8; -fx-text-fill: white; -fx-font-size: 13;"/>
+                        <Button fx:id="toggleConfirm" mnemonicParsing="false" text="&#128275;"
+                                StackPane.alignment="CENTER_RIGHT"
+                                prefWidth="40" prefHeight="42"
+                                style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-cursor: hand; -fx-font-size: 14; -fx-padding: 0 10 0 0; -fx-text-fill: white;"/>
+                    </children>
+                </StackPane>
+
+                <!-- Label Role -->
+                <Label fx:id="Role" layoutX="60.0" layoutY="374.0" prefHeight="20.0" prefWidth="153.0" text="RÔLE" textFill="WHITE">
+                    <font><Font size="13.0" /></font>
+                </Label>
+
+                <!-- ComboBox Role -->
+                <ComboBox fx:id="txtrole" layoutX="60.0" layoutY="399.0" prefWidth="391.0" prefHeight="42.0"
+                          style="-fx-background-color: #30363d;
+                 -fx-border-radius: 8;
+                 -fx-background-radius: 8;
+                 -fx-text-fill: white;
+                 -fx-font-size: 13;
+                 -fx-border-color: #533483;
+                 -fx-border-width: 1.5;"/>
+                <!-- Bouton S'inscrire -->
+                <Button fx:id="btninscri" layoutX="60.0" layoutY="462.0"
+                        mnemonicParsing="false" onAction="#inscrireUtilisateur"
+                        prefHeight="42.0" prefWidth="391.0" text="S'inscrire"
+                        style="-fx-background-color: #533483; -fx-text-fill: white; -fx-font-size: 13; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand;"/>
+
+
+            </children>
+        </AnchorPane>
+    </center>
+</BorderPane>

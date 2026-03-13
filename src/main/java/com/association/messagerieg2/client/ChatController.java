@@ -8,16 +8,20 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import com.association.messagerieg2.util.JPAUtil;
 import jakarta.persistence.EntityManager;
 import java.io.File;
 import java.util.List;
+import javafx.scene.layout.HBox;
 
 public class ChatController {
 
+    // ─── Composants JavaFX liés au chat.fxml ────────────────────────────────────
     @FXML private Button fileButton;
     @FXML private ScrollPane message;
     @FXML private VBox messageContainer;
@@ -26,17 +30,33 @@ public class ChatController {
     @FXML private ListView<String> userListView;
     @FXML private Label receiverNameLabel;
     @FXML private Label receiverStatusLabel;
+    @FXML private Label avatarLabel;
 
+    // ─── Variables internes ──────────────────────────────────────────────────────
     private User currentUser;
     private ServerConnection serverConnection;
     private final MessageService messageService = new MessageService();
 
+    // Couleurs pour les avatars selon le rôle
+    private static final String COLOR_ORGANISATEUR = "#533483";
+    private static final String COLOR_MEMBRE       = "#1c4a6e";
+    private static final String COLOR_BENEVOLE     = "#1b3a2e";
+
+    /**
+     * Appelée depuis LoginController après connexion réussie.
+     * Injecte l'utilisateur, charge la sidebar et démarre le socket.
+     */
     public void setCurrentUser(User user) {
         this.currentUser = user;
         loadConnectedUsers();
         new Thread(() -> connectToServer()).start();
     }
 
+    /**
+     * Connexion au serveur via socket (RG11 — thread séparé).
+     * Écoute les messages et fichiers entrants en temps réel.
+     * En cas d'échec → mode hors ligne (RG10).
+     */
     private void connectToServer() {
         try {
             serverConnection = new ServerConnection();
@@ -46,6 +66,7 @@ public class ChatController {
                 Platform.runLater(() -> {
                     String selected = userListView.getSelectionModel().getSelectedItem();
                     if (obj instanceof SendMessageRequest request) {
+                        // Affiche seulement si c'est la conversation ouverte
                         if (selected != null && selected.equals(request.getSender())) {
                             addMessage(request.getContenu(), false);
                         }
@@ -60,28 +81,122 @@ public class ChatController {
             System.out.println("[CLIENT] Connecté au serveur ✅");
 
         } catch (Exception e) {
-            System.err.println("[CLIENT] Serveur non disponible — mode hors ligne");
+            System.err.println("[CLIENT] Serveur non disponible — mode hors ligne (RG10)");
         }
     }
 
+    /**
+     * Charge la liste des membres dans la sidebar.
+     * RG13 : ORGANISATEUR voit TOUS les membres (online + offline).
+     * MEMBRE/BENEVOLE : voient seulement les membres ONLINE (RG4).
+     */
     private void loadConnectedUsers() {
         EntityManager em = JPAUtil.getFactoryEntityManagerFactory().createEntityManager();
         try {
             List<String> usernames;
+
             if (currentUser.getRole() == User.Role.ORGANISATEUR) {
+                // RG13 : voit tout le monde
                 usernames = em.createQuery(
-                                "SELECT u.username FROM User u WHERE u.username <> :me", String.class)
+                                "SELECT u.username FROM User u WHERE u.username <> :me ORDER BY u.username",
+                                String.class)
                         .setParameter("me", currentUser.getUsername())
                         .getResultList();
             } else {
+                // MEMBRE et BENEVOLE : seulement ONLINE (RG4)
                 usernames = em.createQuery(
-                                "SELECT u.username FROM User u WHERE u.username <> :me AND u.role = :role", String.class)
+                                "SELECT u.username FROM User u WHERE u.username <> :me AND u.status = :status ORDER BY u.username",
+                                String.class)
                         .setParameter("me", currentUser.getUsername())
-                        .setParameter("role", User.Role.ORGANISATEUR)
+                        .setParameter("status", User.Status.ONLINE)
                         .getResultList();
             }
+
             userListView.getItems().clear();
             userListView.getItems().addAll(usernames);
+
+            // Personnalise l'affichage de chaque cellule avec avatar + nom + rôle + statut
+            userListView.setCellFactory(lv -> new ListCell<String>() {
+                @Override
+                protected void updateItem(String username, boolean empty) {
+                    super.updateItem(username, empty);
+                    if (empty || username == null) {
+                        setGraphic(null);
+                        setStyle("-fx-background-color: transparent;");
+                        return;
+                    }
+
+                    // Récupère le rôle et statut depuis la BD
+                    EntityManager em2 = JPAUtil.getFactoryEntityManagerFactory().createEntityManager();
+                    String role = "MEMBRE";
+                    boolean online = false;
+                    try {
+                        User u = em2.createQuery(
+                                        "SELECT u FROM User u WHERE u.username = :username", User.class)
+                                .setParameter("username", username)
+                                .getSingleResult();
+                        role = u.getRole().name();
+                        online = u.getStatus() == User.Status.ONLINE;
+                    } catch (Exception ignored) {
+                    } finally {
+                        em2.close();
+                    }
+
+                    // Initiales pour l'avatar (ex: "ML" pour marie.leroy)
+                    String[] parts = username.split("\\.");
+                    String initiales = parts.length >= 2
+                            ? (parts[0].substring(0, 1) + parts[1].substring(0, 1)).toUpperCase()
+                            : username.substring(0, Math.min(2, username.length())).toUpperCase();
+
+                    // Couleur avatar selon le rôle
+                    String couleurAvatar = switch (role) {
+                        case "ORGANISATEUR" -> COLOR_ORGANISATEUR;
+                        case "BENEVOLE"     -> COLOR_BENEVOLE;
+                        default             -> COLOR_MEMBRE;
+                    };
+
+                    // Cercle avatar avec initiales
+                    Label avatar = new Label(initiales);
+                    avatar.setStyle(
+                            "-fx-background-color: " + couleurAvatar + ";" +
+                                    "-fx-background-radius: 18;" +
+                                    "-fx-min-width: 36; -fx-min-height: 36;" +
+                                    "-fx-max-width: 36; -fx-max-height: 36;" +
+                                    "-fx-alignment: center;" +
+                                    "-fx-text-fill: white;" +
+                                    "-fx-font-weight: bold;" +
+                                    "-fx-font-size: 12;"
+                    );
+
+                    // Nom + rôle
+                    Label nom = new Label(username);
+                    nom.setStyle("-fx-text-fill: #ccd6f6; -fx-font-size: 12; -fx-font-weight: bold;");
+
+                    Label roleLabel = new Label(role);
+                    roleLabel.setStyle("-fx-text-fill: #8892b0; -fx-font-size: 10;");
+
+                    VBox infos = new VBox(2, nom, roleLabel);
+
+                    // Point de statut (vert = online, gris = offline)
+                    Label statut = new Label("●");
+                    statut.setStyle("-fx-text-fill: " + (online ? "#3fb950" : "#484f58") + "; -fx-font-size: 10;");
+
+                    // Assemblage de la cellule
+                    HBox cellule = new HBox(10, avatar, infos, statut);
+                    cellule.setAlignment(Pos.CENTER_LEFT);
+                    cellule.setPadding(new Insets(6, 8, 6, 8));
+
+                    setGraphic(cellule);
+
+                    // Style de la cellule sélectionnée
+                    if (isSelected()) {
+                        setStyle("-fx-background-color: #1c2333;");
+                    } else {
+                        setStyle("-fx-background-color: transparent;");
+                    }
+                }
+            });
+
         } catch (Exception e) {
             System.err.println("[DEBUG] Erreur loadConnectedUsers : " + e.getMessage());
         } finally {
@@ -89,6 +204,10 @@ public class ChatController {
         }
     }
 
+    /**
+     * Initialise le listener de sélection dans la liste des membres.
+     * Au clic sur un membre → charge l'historique et met à jour le header.
+     */
     @FXML
     public void initialize() {
         userListView.getSelectionModel().selectedItemProperty().addListener(
@@ -98,11 +217,41 @@ public class ChatController {
         );
     }
 
+    /**
+     * Charge l'historique de conversation avec un membre (RG8 — ordre chronologique).
+     * Met aussi à jour l'avatar et le statut dans le header.
+     */
     private void loadHistory(String otherUsername) {
+        // Met à jour le header
         receiverNameLabel.setText(otherUsername);
         boolean isOnline = isUserOnline(otherUsername);
-        receiverStatusLabel.setText(isOnline ? "🟢 En ligne" : "🔴 Hors ligne");
+        receiverStatusLabel.setText(isOnline ? "● En ligne" : "● Hors ligne");
+        receiverStatusLabel.setStyle(isOnline
+                ? "-fx-text-fill: #3fb950; -fx-font-size: 11;"
+                : "-fx-text-fill: #484f58; -fx-font-size: 11;");
+
+        // Met à jour l'avatar dans le header
+        if (avatarLabel != null) {
+            String[] parts = otherUsername.split("\\.");
+            String initiales = parts.length >= 2
+                    ? (parts[0].substring(0, 1) + parts[1].substring(0, 1)).toUpperCase()
+                    : otherUsername.substring(0, Math.min(2, otherUsername.length())).toUpperCase();
+            avatarLabel.setText(initiales);
+        }
+
+        // Vide le conteneur et charge les messages
         messageContainer.getChildren().clear();
+
+        // Séparateur date (RG8)
+        String date = java.time.LocalDate.now()
+                .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        Label dateSep = new Label("— Conversation du " + date + " —");
+        dateSep.setStyle("-fx-text-fill: #484f58; -fx-font-size: 10;");
+        dateSep.setMaxWidth(Double.MAX_VALUE);
+        dateSep.setAlignment(javafx.geometry.Pos.CENTER);
+        messageContainer.getChildren().add(dateSep);
+
+        // Charge les messages depuis la BD (RG8)
         List<com.association.messagerieg2.model.Message> history =
                 messageService.getHistory(currentUser.getUsername(), otherUsername);
         for (com.association.messagerieg2.model.Message msg : history) {
@@ -111,6 +260,9 @@ public class ChatController {
         }
     }
 
+    /**
+     * Vérifie si un utilisateur est ONLINE dans la BD.
+     */
     private boolean isUserOnline(String username) {
         EntityManager em = JPAUtil.getFactoryEntityManagerFactory().createEntityManager();
         try {
@@ -126,18 +278,30 @@ public class ChatController {
         }
     }
 
+    /**
+     * Envoie un message texte au destinataire sélectionné (RG5, RG7).
+     */
     @FXML
     void handleSend(ActionEvent event) {
         String contenu = messageField.getText().trim();
         String receiver = userListView.getSelectionModel().getSelectedItem();
+
+        // RG7 : message non vide
         if (contenu.isEmpty()) {
             showAlert("Attention", "Le message ne peut pas être vide.");
             return;
         }
+        // RG5 : destinataire sélectionné
         if (receiver == null) {
             showAlert("Attention", "Sélectionne un destinataire.");
             return;
         }
+        // RG7 : max 1000 caractères
+        if (contenu.length() > 1000) {
+            showAlert("Attention", "Le message ne doit pas dépasser 1000 caractères.");
+            return;
+        }
+
         try {
             serverConnection.sendMessage(currentUser.getUsername(), receiver, contenu);
             addMessage(contenu, true);
@@ -148,6 +312,9 @@ public class ChatController {
         }
     }
 
+    /**
+     * Ouvre le sélecteur de fichier et envoie un fichier au destinataire.
+     */
     @FXML
     void handleFile(ActionEvent event) {
         String receiver = userListView.getSelectionModel().getSelectedItem();
@@ -175,6 +342,10 @@ public class ChatController {
         }
     }
 
+    /**
+     * Affiche un fichier (image ou document) dans la conversation.
+     * Bulle droite = envoyé, bulle gauche = reçu.
+     */
     private void addFileMessage(String fileName, byte[] fileData, boolean isSent) {
         VBox bubble = new VBox(5);
         if (fileName.matches(".*\\.(png|jpg|jpeg|gif)$")) {
@@ -186,45 +357,88 @@ public class ChatController {
             bubble.getChildren().add(imageView);
         } else {
             Label fileLabel = new Label("📄 " + fileName);
-            fileLabel.setStyle("-fx-font-size: 12;");
+            fileLabel.setStyle("-fx-font-size: 12; -fx-text-fill: white;");
             bubble.getChildren().add(fileLabel);
         }
         if (isSent) {
-            bubble.setStyle("-fx-background-color: lightblue; -fx-background-radius: 10; -fx-padding: 6 10;");
-            VBox.setMargin(bubble, new Insets(3, 8, 3, 250));
+            // Bulle envoyée — droite, violet
+            bubble.setStyle("-fx-background-color: #533483; -fx-background-radius: 14 14 4 14; -fx-padding: 8 12;");
+            VBox.setMargin(bubble, new Insets(3, 8, 3, 200));
         } else {
-            bubble.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 6 10;");
-            VBox.setMargin(bubble, new Insets(3, 250, 3, 8));
+            // Bulle reçue — gauche, gris foncé
+            bubble.setStyle("-fx-background-color: #21262d; -fx-background-radius: 14 14 14 4; -fx-padding: 8 12;");
+            VBox.setMargin(bubble, new Insets(3, 200, 3, 8));
         }
         messageContainer.getChildren().add(bubble);
         Platform.runLater(() -> this.message.setVvalue(1.0));
     }
 
+    /**
+     * Crée et affiche une bulle de message texte.
+     * Bulle droite (violet) = message envoyé.
+     * Bulle gauche (gris foncé) = message reçu.
+     */
     private void addMessage(String message, boolean isSent) {
         String heure = java.time.LocalTime.now()
                 .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
-        VBox bubble = new VBox(2);
+
+        VBox bubble = new VBox(3);
         Label msgLabel = new Label(message);
         msgLabel.setWrapText(true);
-        msgLabel.setMaxWidth(220);
-        Label timeLabel = new Label(heure);
-        timeLabel.setStyle("-fx-font-size: 9; -fx-text-fill: #555555;");
-        bubble.getChildren().addAll(msgLabel, timeLabel);
+        msgLabel.setMaxWidth(260);
+
+        // ─── Statut de lecture (seulement pour les messages envoyés) ───
+        String statutLecture = "";
+        String couleurStatut = "";
+
         if (isSent) {
-            bubble.setStyle("-fx-background-color: lightblue; -fx-background-radius: 10; -fx-padding: 6 10;");
-            msgLabel.setStyle("-fx-font-size: 12; -fx-text-fill: black;");
-            bubble.setMaxWidth(240);
-            VBox.setMargin(bubble, new Insets(3, 8, 3, 250));
-        } else {
-            bubble.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 6 10;");
-            msgLabel.setStyle("-fx-font-size: 12; -fx-text-fill: black;");
-            bubble.setMaxWidth(240);
-            VBox.setMargin(bubble, new Insets(3, 250, 3, 8));
+            String receiver = userListView.getSelectionModel().getSelectedItem();
+            boolean receiverOnline = receiver != null && isUserOnline(receiver);
+
+            if (receiverOnline) {
+                // 2 traits BLEUS = message lu (en ligne)
+                statutLecture = " ✓✓";
+                couleurStatut = "#4fc3f7";
+            } else {
+                // 2 traits GRIS = envoyé mais pas lu (hors ligne)
+                statutLecture = " ✓✓";
+                couleurStatut = "#8892b0";
+            }
         }
+
+        // Ligne heure + statut
+        HBox timeRow = new HBox(2);
+        Label timeLabel = new Label(heure);
+        timeLabel.setStyle("-fx-font-size: 9; -fx-text-fill: rgba(255,255,255,0.5);");
+
+        if (isSent) {
+            Label statutLabel = new Label(statutLecture);
+            statutLabel.setStyle("-fx-font-size: 9; -fx-text-fill: " + couleurStatut + ";");
+            timeRow.getChildren().addAll(timeLabel, statutLabel);
+        } else {
+            timeRow.getChildren().add(timeLabel);
+        }
+
+        bubble.getChildren().addAll(msgLabel, timeRow);
+        bubble.setMaxWidth(280);
+
+        if (isSent) {
+            msgLabel.setStyle("-fx-font-size: 12; -fx-text-fill: white;");
+            bubble.setStyle("-fx-background-color: #533483; -fx-background-radius: 14 14 4 14; -fx-padding: 8 12;");
+            VBox.setMargin(bubble, new Insets(3, 8, 3, 200));
+        } else {
+            msgLabel.setStyle("-fx-font-size: 12; -fx-text-fill: #ccd6f6;");
+            bubble.setStyle("-fx-background-color: #21262d; -fx-background-radius: 14 14 14 4; -fx-padding: 8 12;");
+            VBox.setMargin(bubble, new Insets(3, 200, 3, 8));
+        }
+
         messageContainer.getChildren().add(bubble);
         Platform.runLater(() -> this.message.setVvalue(1.0));
     }
 
+    /**
+     * Affiche une alerte JavaFX.
+     */
     private void showAlert(String titre, String contenu) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle(titre);
