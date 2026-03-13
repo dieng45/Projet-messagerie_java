@@ -507,4 +507,10 @@ public class ChatController {
         alert.setContentText(contenu);
         alert.showAndWait();
     }
+
+    public void deconnecterSocket() {
+        try {
+            if (serverConnection != null) serverConnection.disconnect();
+        } catch (Exception ignored) {}
+    }
 }

@@ -118,6 +118,31 @@ public class LoginController {
                     stage.setResizable(false);
                     stage.show();
 
+                    // ← ICI : intercepte la fermeture avec le bouton X (RG4)
+                    User loggedUser = user;
+                    stage.setOnCloseRequest(e -> {
+                        // Passe le statut à OFFLINE en BD
+                        EntityManager em2 = JPAUtil.getFactoryEntityManagerFactory().createEntityManager();
+                        EntityTransaction tx2 = em2.getTransaction();
+                        try {
+                            tx2.begin();
+                            User u = em2.find(User.class, loggedUser.getId());
+                            u.setStatus(User.Status.OFFLINE);
+                            em2.merge(u);
+                            tx2.commit();
+                            System.out.println("[CLIENT] Fenêtre X fermée → statut OFFLINE ✅");
+                        } catch (Exception ex2) {
+                            if (tx2.isActive()) tx2.rollback();
+                        } finally {
+                            em2.close();
+                        }
+
+                        // Ferme aussi le socket proprement
+                        try {
+                            chatController.deconnecterSocket();
+                        } catch (Exception ignored) {}
+                    });
+
                     Stage currentStage = (Stage) ((Node) event.getSource())
                             .getScene().getWindow();
                     currentStage.close();
@@ -143,6 +168,7 @@ public class LoginController {
         } finally {
             em.close();
         }
+
 
     }
 
